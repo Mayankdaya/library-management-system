@@ -5,7 +5,14 @@ export interface Book {
   isbn: string;
   genre: string;
   status: 'Available' | 'Checked Out';
-  borrower?: string;
+  memberId?: number;
   checkoutDate?: string;
   dueDate?: string;
+}
+
+export interface Member {
+  id: number;
+  name: string;
+  email: string;
+  joinDate: string;
 }

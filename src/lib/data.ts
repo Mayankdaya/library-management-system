@@ -1,4 +1,10 @@
-import type { Book } from '@/types';
+import type { Book, Member } from '@/types';
+
+export const initialMembers: Member[] = [
+  { id: 1, name: 'John Doe', email: 'john.doe@example.com', joinDate: '2023-01-15' },
+  { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', joinDate: '2023-02-20' },
+  { id: 3, name: 'Alice Johnson', email: 'alice.j@example.com', joinDate: '2023-03-10' },
+];
 
 export const initialBooks: Book[] = [
   {
@@ -16,9 +22,9 @@ export const initialBooks: Book[] = [
     isbn: '978-0451524935',
     genre: 'Dystopian',
     status: 'Checked Out',
-    borrower: 'John Doe',
+    memberId: 1,
     checkoutDate: '2023-10-01',
-    dueDate: '2024-08-22',
+    dueDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 10 days ago
   },
   {
     id: 3,
@@ -43,8 +49,27 @@ export const initialBooks: Book[] = [
     isbn: '978-0345339683',
     genre: 'Fantasy',
     status: 'Checked Out',
-    borrower: 'Jane Smith',
+    memberId: 2,
     checkoutDate: '2023-10-15',
-    dueDate: '2024-09-05',
+    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 14 days from now
   },
+  {
+    id: 6,
+    title: 'Dune',
+    author: 'Frank Herbert',
+    isbn: '978-0441013593',
+    genre: 'Sci-Fi',
+    status: 'Available'
+  },
+  {
+    id: 7,
+    title: 'The Catcher in the Rye',
+    author: 'J.D. Salinger',
+    isbn: '978-0316769488',
+    genre: 'Fiction',
+    status: 'Checked Out',
+    memberId: 3,
+    checkoutDate: '2024-07-01',
+    dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 days ago
+  }
 ];

@@ -17,16 +17,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useToast } from "@/hooks/use-toast"
+import type { Member } from "@/types"
 
 const formSchema = z.object({
-  borrower: z.string().min(2, "Borrower name must be at least 2 characters."),
+  memberId: z.coerce.number({ required_error: "A member must be selected." }),
   dueDate: z.date({
     required_error: "A due date is required.",
   }),
@@ -36,10 +43,11 @@ type CheckOutFormValues = z.infer<typeof formSchema>;
 
 interface CheckOutFormProps {
   bookTitle: string;
+  members: Member[];
   onFormSubmit: (data: CheckOutFormValues) => void;
 }
 
-export default function CheckOutForm({ bookTitle, onFormSubmit }: CheckOutFormProps) {
+export default function CheckOutForm({ bookTitle, members, onFormSubmit }: CheckOutFormProps) {
   const { toast } = useToast();
   const form = useForm<CheckOutFormValues>({
     resolver: zodResolver(formSchema),
@@ -47,9 +55,10 @@ export default function CheckOutForm({ bookTitle, onFormSubmit }: CheckOutFormPr
 
   function onSubmit(data: CheckOutFormValues) {
     onFormSubmit(data);
+    const memberName = members.find(m => m.id === data.memberId)?.name;
     toast({
       title: "Book Checked Out",
-      description: `"${bookTitle}" is due on ${format(data.dueDate, "PPP")}.`,
+      description: `"${bookTitle}" checked out to ${memberName} is due on ${format(data.dueDate, "PPP")}.`,
     });
   }
 
@@ -58,13 +67,24 @@ export default function CheckOutForm({ bookTitle, onFormSubmit }: CheckOutFormPr
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
         <FormField
           control={form.control}
-          name="borrower"
+          name="memberId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Borrower's Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
+              <FormLabel>Borrower</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a member" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {members.map(member => (
+                    <SelectItem key={member.id} value={member.id.toString()}>
+                      {member.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
