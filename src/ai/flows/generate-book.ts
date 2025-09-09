@@ -19,8 +19,8 @@ export type GenerateBookInput = z.infer<typeof GenerateBookInputSchema>;
 const GenerateBookOutputSchema = z.object({
   title: z.string().describe('The title of the generated book.'),
   author: z.string().describe('The author of the generated book. Should be a plausible but fictional name.'),
-  // Regex for ISBN-10 or ISBN-13
-  isbn: z.string().regex(/^(?:ISBN(?:-13)?:?)(?=[0-9]{13}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)97[89][- ]?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$|^(?:ISBN(?:-10)?:?)(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$)[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$/).describe('A valid, unique, and fictional ISBN-13 for the book.'),
+  // A simple regex for ISBN-13, allowing optional hyphens.
+  isbn: z.string().regex(/^(978|979)-?[0-9]{1,5}-?[0-9]{1,7}-?[0-9]{1,6}-?[0-9X]$|^[0-9]{13}$/, "A valid ISBN-13 is required.").describe('A valid, unique, and fictional ISBN-13 for the book.'),
   genre: z.string().describe('The genre of the generated book.'),
 });
 export type GenerateBookOutput = z.infer<typeof GenerateBookOutputSchema>;
@@ -38,7 +38,7 @@ const prompt = ai.definePrompt({
 
   Based on the following topic, generate a single, realistic-sounding but entirely fictional book.
 
-  Your response must include a unique title, a plausible author name, a validly formatted ISBN-13, and a suitable genre.
+  Your response must include a unique title, a plausible author name, a validly formatted ISBN-13 (e.g., 978-3-16-148410-0), and a suitable genre.
 
   Topic: {{topic}}
   `,

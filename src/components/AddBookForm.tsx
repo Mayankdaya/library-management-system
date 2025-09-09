@@ -23,7 +23,7 @@ import { Textarea } from "./ui/textarea"
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   author: z.string().min(2, "Author must be at least 2 characters."),
-  isbn: z.string().regex(/^(?:ISBN(?:-13)?:?)(?=[0-9]{13}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)97[89][- ]?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$|^(?:ISBN(?:-10)?:?)(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$)[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$/, "Invalid ISBN format."),
+  isbn: z.string().regex(/^(978|979)-?[0-9]{1,5}-?[0-9]{1,7}-?[0-9]{1,6}-?[0-9X]$|^[0-9]{13}$/, "Please enter a valid ISBN-13."),
   genre: z.string().min(2, "Genre must be at least 2 characters."),
 })
 
