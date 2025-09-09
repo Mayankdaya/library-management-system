@@ -1,0 +1,50 @@
+import type { Book } from '@/types';
+
+export const initialBooks: Book[] = [
+  {
+    id: 1,
+    title: 'To Kill a Mockingbird',
+    author: 'Harper Lee',
+    isbn: '978-0061120084',
+    genre: 'Fiction',
+    status: 'Available',
+  },
+  {
+    id: 2,
+    title: '1984',
+    author: 'George Orwell',
+    isbn: '978-0451524935',
+    genre: 'Dystopian',
+    status: 'Checked Out',
+    borrower: 'John Doe',
+    checkoutDate: '2023-10-01',
+    dueDate: '2024-08-22',
+  },
+  {
+    id: 3,
+    title: 'The Great Gatsby',
+    author: 'F. Scott Fitzgerald',
+    isbn: '978-0743273565',
+    genre: 'Classic',
+    status: 'Available',
+  },
+  {
+    id: 4,
+    title: 'Pride and Prejudice',
+    author: 'Jane Austen',
+    isbn: '978-0141439518',
+    genre: 'Romance',
+    status: 'Available',
+  },
+  {
+    id: 5,
+    title: 'The Hobbit',
+    author: 'J.R.R. Tolkien',
+    isbn: '978-0345339683',
+    genre: 'Fantasy',
+    status: 'Checked Out',
+    borrower: 'Jane Smith',
+    checkoutDate: '2023-10-15',
+    dueDate: '2024-09-05',
+  },
+];
