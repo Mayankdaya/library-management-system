@@ -1,112 +1,23 @@
 "use client";
+import React from "react";
+import { Spotlight } from "@/components/ui/spotlight-new";
+import Header from "@/components/Header";
 
-import { useState, useMemo } from 'react';
-import type { Book, Member } from '@/types';
-import { initialBooks, initialMembers } from '@/lib/data';
-import Header from '@/components/Header';
-import BookTable from '@/components/BookTable';
-import SuggestedReads from '@/components/SuggestedReads';
-import Dashboard from '@/components/Dashboard';
-
-export default function Home() {
-  const [books, setBooks] = useState<Book[]>(initialBooks);
-  const [members, setMembers] = useState<Member[]>(initialMembers);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
-
-  const handleAddBook = (newBook: Omit<Book, 'id' | 'status'>) => {
-    setBooks(prevBooks => [
-      ...prevBooks,
-      {
-        ...newBook,
-        id: Date.now(),
-        status: 'Available',
-      },
-    ]);
-  };
-
-  const handleCheckOut = (bookId: number, memberId: number, dueDate: string) => {
-    setBooks(prevBooks =>
-      prevBooks.map(book =>
-        book.id === bookId
-          ? {
-              ...book,
-              status: 'Checked Out',
-              memberId: memberId,
-              checkoutDate: new Date().toISOString().split('T')[0],
-              dueDate,
-            }
-          : book
-      )
-    );
-  };
-
-  const handleReturnBook = (bookId: number) => {
-    setBooks(prevBooks =>
-      prevBooks.map(book =>
-        book.id === bookId
-          ? {
-              ...book,
-              status: 'Available',
-              memberId: undefined,
-              checkoutDate: undefined,
-              dueDate: undefined,
-            }
-          : book
-      )
-    );
-  };
-
-  const filteredBooks = useMemo(() => {
-    return books
-      .filter(book => {
-        if (filterStatus === 'All') return true;
-        if (filterStatus === 'Overdue') {
-          if (book.status !== 'Checked Out' || !book.dueDate) return false;
-          return new Date(book.dueDate) < new Date();
-        }
-        return book.status === filterStatus;
-      })
-      .filter(book => {
-        const term = searchTerm.toLowerCase();
-        const member = book.memberId ? members.find(m => m.id === book.memberId) : null;
-        return (
-          book.title.toLowerCase().includes(term) ||
-          book.author.toLowerCase().includes(term) ||
-          book.isbn.toLowerCase().includes(term) ||
-          book.genre.toLowerCase().includes(term) ||
-          (member && member.name.toLowerCase().includes(term))
-        );
-      });
-  }, [books, members, searchTerm, filterStatus]);
-
-  const borrowingHistory = useMemo(() => {
-    return books.filter(book => book.status === 'Checked Out').map(({ title, author, genre }) => ({ title, author, genre }));
-  }, [books]);
-
-
+export default function SpotlightNewDemo() {
   return (
-    <div className="min-h-screen bg-transparent text-foreground font-body">
+    <div className="h-screen w-full flex flex-col antialiased bg-transparent relative overflow-hidden">
       <Header />
-      <main className="container mx-auto px-4 py-8">
-        <Dashboard books={books} members={members} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mt-8">
-          <div className="lg:col-span-2">
-            <BookTable
-              books={filteredBooks}
-              members={members}
-              onSearch={setSearchTerm}
-              onFilter={setFilterStatus}
-              onAddBook={handleAddBook}
-              onCheckOut={handleCheckOut}
-              onReturnBook={handleReturnBook}
-            />
-          </div>
-          <div>
-            <SuggestedReads borrowingHistory={borrowingHistory} />
-          </div>
+      <div className="flex-grow flex md:items-center md:justify-center relative">
+        <Spotlight />
+        <div className="p-4 max-w-7xl mx-auto relative z-10 w-full pt-20 md:pt-0">
+          <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
+            Verdant Library
+          </h1>
+          <p className="mt-4 font-normal text-base text-neutral-300 max-w-lg text-center mx-auto">
+            A classic library management app to organize a collection of books and track their borrowing status.
+          </p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

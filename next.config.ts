@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    config.externals.push('motion/react');
+    return config;
+  },
 };
 
 export default nextConfig;
