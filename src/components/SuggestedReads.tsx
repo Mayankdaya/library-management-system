@@ -38,7 +38,7 @@ export default function SuggestedReads({ borrowingHistory }: SuggestedReadsProps
   };
 
   return (
-    <Card className="bg-card shadow-sm sticky top-8">
+    <Card className="glassmorphic sticky top-8">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline">
           <Sparkles className="h-6 w-6 text-accent" />
@@ -74,7 +74,7 @@ export default function SuggestedReads({ borrowingHistory }: SuggestedReadsProps
           <div className="space-y-4 pt-4">
             <h4 className="font-semibold font-headline text-lg">Here are some books you might like:</h4>
             {suggestions.map((book, index) => (
-              <Card key={index} className="bg-background">
+              <Card key={index} className="bg-background/50">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-base">{book.title}</CardTitle>
                   <CardDescription>by {book.author} ({book.genre})</CardDescription>

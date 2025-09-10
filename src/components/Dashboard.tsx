@@ -1,6 +1,7 @@
 import type { Book, Member } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Book as BookIcon, Users, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DashboardProps {
   books: Book[];
@@ -15,7 +16,7 @@ export default function Dashboard({ books, members }: DashboardProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-      <Card>
+      <Card className="glassmorphic">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Books</CardTitle>
           <BookIcon className="h-4 w-4 text-muted-foreground" />
@@ -25,7 +26,7 @@ export default function Dashboard({ books, members }: DashboardProps) {
           <p className="text-xs text-muted-foreground">in the entire collection</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="glassmorphic">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Books Checked Out</CardTitle>
           <BookIcon className="h-4 w-4 text-muted-foreground" />
@@ -35,7 +36,7 @@ export default function Dashboard({ books, members }: DashboardProps) {
           <p className="text-xs text-muted-foreground">currently on loan</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="glassmorphic">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Overdue Books</CardTitle>
           <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -45,7 +46,7 @@ export default function Dashboard({ books, members }: DashboardProps) {
           <p className="text-xs text-muted-foreground">need to be returned</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="glassmorphic">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Members</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />

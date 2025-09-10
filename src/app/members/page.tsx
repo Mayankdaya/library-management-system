@@ -13,22 +13,23 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>(initialMembers);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-body">
+    <div className="min-h-screen bg-transparent text-foreground font-body">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <Card>
+        <Card className='glassmorphic'>
           <CardHeader>
             <CardTitle>Library Members</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="border-white/10">
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Join Date</TableHead>
@@ -36,7 +37,7 @@ export default function MembersPage() {
               </TableHeader>
               <TableBody>
                 {members.map(member => (
-                  <TableRow key={member.id}>
+                  <TableRow key={member.id} className="border-white/10">
                     <TableCell className="font-medium">{member.name}</TableCell>
                     <TableCell>{member.email}</TableCell>
                     <TableCell>{new Date(member.joinDate).toLocaleDateString()}</TableCell>

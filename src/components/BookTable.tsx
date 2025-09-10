@@ -69,14 +69,14 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
 
   return (
     <div className="space-y-4">
-      <div className="bg-card p-6 rounded-lg shadow-sm">
+      <div className="glassmorphic p-6">
         <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
             <h2 className="text-2xl font-headline font-semibold">Book Catalog</h2>
             <Dialog open={addBookOpen} onOpenChange={setAddBookOpen}>
                 <DialogTrigger asChild>
                     <Button><Plus className="mr-2 h-4 w-4" /> Add New Book</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] glassmorphic">
                     <DialogHeader>
                         <DialogTitle>Add a New Book</DialogTitle>
                     </DialogHeader>
@@ -116,10 +116,10 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
         </div>
       </div>
 
-      <div className="bg-card rounded-lg shadow-sm overflow-hidden">
+      <div className="glassmorphic overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="border-white/10">
               <TableHead>Title</TableHead>
               <TableHead>Author</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
@@ -130,7 +130,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
           </TableHeader>
           <TableBody>
             {books.length > 0 ? books.map((book) => (
-              <TableRow key={book.id} className={cn(isOverdue(book.dueDate) && 'bg-destructive/10')}>
+              <TableRow key={book.id} className={cn('border-white/10', isOverdue(book.dueDate) && 'bg-destructive/20')}>
                 <TableCell className="font-medium">{book.title}</TableCell>
                 <TableCell>{book.author}</TableCell>
                 <TableCell className="hidden md:table-cell">
@@ -150,7 +150,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className='glassmorphic'>
                       {book.status === 'Available' ? (
                         <DropdownMenuItem onClick={() => setCheckOutBook(book)}>
                           <BookUp className="mr-2 h-4 w-4" />
@@ -178,7 +178,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
       </div>
       
       <Dialog open={!!checkOutBook} onOpenChange={(isOpen) => !isOpen && setCheckOutBook(null)}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] glassmorphic">
             <DialogHeader>
                 <DialogTitle>Check Out: {checkOutBook?.title}</DialogTitle>
             </DialogHeader>

@@ -86,7 +86,7 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-body">
+    <div className="min-h-screen bg-transparent text-foreground font-body">
       <Header />
       <main className="container mx-auto px-4 py-8">
         <Dashboard books={books} members={members} />

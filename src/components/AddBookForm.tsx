@@ -99,7 +99,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
             Add Book with AI
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="glassmorphic">
           <DialogHeader>
             <DialogTitle>Generate a Book with AI</DialogTitle>
           </DialogHeader>
@@ -131,7 +131,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
             <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
+            <span className="bg-card/50 px-2 text-muted-foreground">
             Or add manually
             </span>
         </div>
