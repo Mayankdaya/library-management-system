@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -33,8 +34,9 @@ export default function PremiumHomePage() {
   ];
 
   const featuredBook = {
-      title: "The Midnight Library",
-      author: "Matt Haig",
+      id: 3,
+      title: "The Great Gatsby",
+      author: "F. Scott Fitzgerald",
       description: "Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices... Would you have done anything differently, if you had the chance to undo your regrets?",
       cover: bookCovers.bookCovers[0],
   };
@@ -148,8 +150,10 @@ export default function PremiumHomePage() {
                     <h3 className="text-2xl font-bold font-headline text-primary/90">{featuredBook.title}</h3>
                     <p className="text-lg text-muted-foreground mb-4">by {featuredBook.author}</p>
                     <p className="italic text-muted-foreground">"{featuredBook.description}"</p>
-                     <Button size="lg" className="mt-6 bg-primary/80 hover:bg-primary text-primary-foreground">
-                        Learn More
+                     <Button size="lg" className="mt-6 bg-primary/80 hover:bg-primary text-primary-foreground" asChild>
+                        <Link href={`/catalog/${featuredBook.id}`}>
+                          Learn More
+                        </Link>
                     </Button>
                 </CardContent>
                 <motion.div
@@ -223,13 +227,13 @@ export default function PremiumHomePage() {
             <ul className="space-y-2">
               <li><Link href="/catalog" className="text-sm hover:text-primary transition-colors">Catalog</Link></li>
               <li><Link href="/members" className="text-sm hover:text-primary transition-colors">Members</Link></li>
-              <li><Link href="#" className="text-sm hover:text-primary transition-colors">Community</Link></li>
+              <li><Link href="/community" className="text-sm hover:text-primary transition-colors">Community</Link></li>
             </ul>
           </div>
            <div>
             <h3 className="font-bold text-lg font-headline mb-4">Account</h3>
             <ul className="space-y-2">
-              <li><Link href="#" className="text-sm hover:text-primary transition-colors">My Profile</Link></li>
+              <li><Link href="/settings/profile" className="text-sm hover:text-primary transition-colors">My Profile</Link></li>
               <li><Link href="#" className="text-sm hover:text-primary transition-colors">Checkout</Link></li>
               <li><Link href="#" className="text-sm hover:text-primary transition-colors">Reservations</Link></li>
             </ul>
@@ -252,3 +256,5 @@ export default function PremiumHomePage() {
     </div>
   );
 }
+
+    
