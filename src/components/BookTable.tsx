@@ -69,7 +69,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
 
   return (
     <div className="space-y-4">
-      <div className="glassmorphic p-6">
+      <div className="glassmorphic p-6 rounded-lg">
         <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
             <h2 className="text-2xl font-headline font-semibold">Book Catalog</h2>
             <Dialog open={addBookOpen} onOpenChange={setAddBookOpen}>
@@ -116,7 +116,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
         </div>
       </div>
 
-      <div className="glassmorphic overflow-hidden">
+      <div className="glassmorphic overflow-hidden rounded-lg">
         <Table>
           <TableHeader>
             <TableRow className="border-white/10">
