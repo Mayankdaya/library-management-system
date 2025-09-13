@@ -84,7 +84,7 @@ export default function PremiumHomePage() {
       <Header />
       <main>
         {/* Hero Section */}
-        <section className="relative h-[60vh] flex items-center justify-center text-center -mt-20">
+        <section className="relative h-[60vh] flex items-center justify-center text-center">
           <div 
             className="absolute inset-0 bg-gradient-to-br from-background via-card to-background opacity-80"
           />
