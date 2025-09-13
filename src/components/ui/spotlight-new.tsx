@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 type SpotlightProps = {
@@ -55,8 +55,8 @@ export const Spotlight = ({
         <motion.div
           className="absolute inset-0 h-full w-full bg-transparent"
           style={{
-            maskImage: `radial-gradient(500px at 50% 50%, ${fill}, transparent)`,
-            WebkitMaskImage: `radial-gradient(500px at 50% 50%, ${fill}, transparent)`,
+            maskImage: `radial-gradient(400px at 50% 50%, ${fill}, transparent)`,
+            WebkitMaskImage: `radial-gradient(400px at 50% 50%, ${fill}, transparent)`,
           }}
         />
       )}
