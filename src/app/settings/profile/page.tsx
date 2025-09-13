@@ -1,10 +1,27 @@
+"use client";
+
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function ProfileSettingsPage() {
+    const { toast } = useToast();
+    const [name, setName] = useState("John Doe");
+    const [email, setEmail] = useState("john.doe@example.com");
+    const [bio, setBio] = useState("");
+
+    const handleSaveChanges = () => {
+        toast({
+            title: "Profile Updated",
+            description: "Your profile information has been successfully saved.",
+        });
+    }
+
     return (
         <Card className="glassmorphic">
             <CardHeader>
@@ -24,22 +41,23 @@ export default function ProfileSettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue="John Doe" />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue="john.doe@example.com" />
+                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
-                    <textarea
+                    <Textarea
                         id="bio"
-                        className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Tell us a little bit about yourself"
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
                     />
                 </div>
                 <div className="flex justify-end">
-                    <Button>Save Changes</Button>
+                    <Button onClick={handleSaveChanges}>Save Changes</Button>
                 </div>
             </CardContent>
         </Card>
