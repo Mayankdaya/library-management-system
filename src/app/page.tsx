@@ -15,7 +15,6 @@ export default function PremiumHomePage() {
         <div
             className={cn(
             "pointer-events-none absolute inset-0 [background-size:40px_40px] select-none",
-            "[background-image:linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)]",
             )}
         />
         <Spotlight
