@@ -32,15 +32,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Search, MoreVertical, BookUp, BookDown, Library, UserCheck, Book as BookIcon } from 'lucide-react';
+import { Plus, Search, MoreVertical, BookDown, Library, UserCheck, Book as BookIcon, ShoppingCart } from 'lucide-react';
 import AddBookForm from './AddBookForm';
-import CheckOutForm from './CheckOutForm';
 import { Badge } from './ui/badge';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import type { GenerateBookOutput } from '@/ai/flows/generate-book';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import bookCovers from '@/lib/placeholder-images.json';
+import { useCheckout } from '@/hooks/use-checkout';
 
 
 interface BookTableProps {
@@ -49,16 +49,16 @@ interface BookTableProps {
   onSearch: (term: string) => void;
   onFilter: (status: string) => void;
   onAddBook: (book: Omit<Book, 'id' | 'status'>) => void;
-  onCheckOut: (bookId: number, memberId: number, dueDate: string) => void;
+  onCheckOut: (bookIds: number[], memberId: number, dueDate: string) => void;
   onReturnBook: (bookId: number) => void;
   onReserveBook: (bookId: number, memberId: number) => void;
 }
 
 export default function BookTable({ books, members, onSearch, onFilter, onAddBook, onCheckOut, onReturnBook, onReserveBook }: BookTableProps) {
   const [addBookOpen, setAddBookOpen] = React.useState(false);
-  const [checkOutBook, setCheckOutBook] = React.useState<Book | null>(null);
   const [generatedBook, setGeneratedBook] = React.useState<GenerateBookOutput | null>(null);
   const { toast } = useToast();
+  const { checkoutItems, addToCheckout } = useCheckout();
 
   const handleReturn = (book: Book) => {
     onReturnBook(book.id);
@@ -85,6 +85,14 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
         description: `"${book.title}" has been reserved for ${member?.name}. They are position #${(book.reservations?.length || 0) + 1} in the queue.`
     });
   }
+
+  const handleAddToCart = (book: Book) => {
+    addToCheckout(book);
+    toast({
+      title: 'Added to Checkout',
+      description: `"${book.title}" has been added to your checkout list.`,
+    });
+  };
 
   const getMemberName = (memberId?: number) => {
     if (!memberId) return 'N/A';
@@ -160,6 +168,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
           <TableBody>
             {books.length > 0 ? books.map((book) => {
               const cover = book.coverImage ? { src: book.coverImage, width: 400, height: 600, hint: 'ai generated' } : bookCovers.bookCovers[(book.id - 1) % bookCovers.bookCovers.length];
+              const isBookInCheckout = checkoutItems.some(item => item.id === book.id);
               return (
               <TableRow key={book.id} className={cn('border-white/10', isOverdue(book.dueDate) && 'bg-destructive/20 hover:bg-destructive/30')}>
                 <TableCell className="font-medium">
@@ -211,9 +220,9 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className='glassmorphic'>
                       {book.status === 'Available' ? (
-                        <DropdownMenuItem onClick={() => setCheckOutBook(book)}>
-                          <BookUp className="mr-2 h-4 w-4" />
-                          <span>Check Out</span>
+                        <DropdownMenuItem onClick={() => handleAddToCart(book)} disabled={isBookInCheckout}>
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          <span>{isBookInCheckout ? 'Added to Checkout' : 'Add to Checkout'}</span>
                         </DropdownMenuItem>
                       ) : (
                         <>
@@ -257,21 +266,6 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
           </TableBody>
         </Table>
       </div>
-      
-      <Dialog open={!!checkOutBook} onOpenChange={(isOpen) => !isOpen && setCheckOutBook(null)}>
-        <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-                <DialogTitle>Check Out: {checkOutBook?.title}</DialogTitle>
-            </DialogHeader>
-            {checkOutBook && <CheckOutForm 
-                bookTitle={checkOutBook.title}
-                members={members}
-                onFormSubmit={(data) => {
-                  onCheckOut(checkOutBook.id, data.memberId, data.dueDate.toISOString().split('T')[0]);
-                  setCheckOutBook(null);
-                }} />}
-        </DialogContent>
-      </Dialog>
     </div>
     </TooltipProvider>
   );

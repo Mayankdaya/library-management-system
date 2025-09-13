@@ -4,8 +4,9 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, ShoppingCart } from 'lucide-react';
 import React from 'react';
+import { useCheckout } from '@/hooks/use-checkout';
 
 
 export const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -33,6 +34,7 @@ const MessageSquareQuoteIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function Header() {
+  const { checkoutItems } = useCheckout();
 
   return (
     <header className={cn("glassmorphic sticky top-0 left-0 right-0 z-30")}>
@@ -57,10 +59,21 @@ export default function Header() {
         </nav>
         <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" asChild>
-            <Link href="/settings">
-                <Settings className="h-6 w-6" />
-                <span className="sr-only">Settings</span>
-            </Link>
+              <Link href="/checkout" className="relative">
+                <ShoppingCart className="h-6 w-6" />
+                {checkoutItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    {checkoutItems.length}
+                  </span>
+                )}
+                <span className="sr-only">Checkout</span>
+              </Link>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/settings">
+                  <Settings className="h-6 w-6" />
+                  <span className="sr-only">Settings</span>
+              </Link>
             </Button>
         </div>
       </div>

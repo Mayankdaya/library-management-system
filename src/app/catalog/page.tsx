@@ -1,18 +1,22 @@
 "use client";
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Book, Member } from '@/types';
 import { initialBooks, initialMembers } from '@/lib/data';
 import Header from '@/components/Header';
 import BookTable from '@/components/BookTable';
 import SuggestedReads from '@/components/SuggestedReads';
 import Dashboard from '@/components/Dashboard';
+import { useCheckout } from '@/hooks/use-checkout';
 
 export default function CatalogPage() {
+  const router = useRouter();
   const [books, setBooks] = useState<Book[]>(initialBooks);
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const { clearCheckout } = useCheckout();
 
   const handleAddBook = (newBook: Omit<Book, 'id' | 'status'>) => {
     setBooks(prevBooks => [
@@ -26,10 +30,10 @@ export default function CatalogPage() {
     ]);
   };
 
-  const handleCheckOut = (bookId: number, memberId: number, dueDate: string) => {
+  const handleCheckOut = (bookIds: number[], memberId: number, dueDate: string) => {
     setBooks(prevBooks =>
       prevBooks.map(book =>
-        book.id === bookId
+        bookIds.includes(book.id)
           ? {
               ...book,
               status: 'Checked Out',
@@ -40,6 +44,10 @@ export default function CatalogPage() {
           : book
       )
     );
+    // Clear the cart after checkout
+    clearCheckout();
+    // Redirect to catalog page to see the result
+    router.push('/catalog');
   };
 
   const handleReturnBook = (bookId: number) => {

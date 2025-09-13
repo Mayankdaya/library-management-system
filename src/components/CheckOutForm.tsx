@@ -30,7 +30,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useToast } from "@/hooks/use-toast"
-import type { Member } from "@/types"
+import type { Member, Book } from "@/types"
 
 const formSchema = z.object({
   memberId: z.coerce.number({ required_error: "A member must be selected." }),
@@ -42,23 +42,28 @@ const formSchema = z.object({
 type CheckOutFormValues = z.infer<typeof formSchema>;
 
 interface CheckOutFormProps {
-  bookTitle: string;
+  books: Book[];
   members: Member[];
-  onFormSubmit: (data: CheckOutFormValues) => void;
+  onFormSubmit: (data: CheckOutFormValues & { bookIds: number[] }) => void;
 }
 
-export default function CheckOutForm({ bookTitle, members, onFormSubmit }: CheckOutFormProps) {
+export default function CheckOutForm({ books, members, onFormSubmit }: CheckOutFormProps) {
   const { toast } = useToast();
   const form = useForm<CheckOutFormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      // Set default due date to 2 weeks from now
+      dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    }
   })
 
   function onSubmit(data: CheckOutFormValues) {
-    onFormSubmit(data);
+    const bookIds = books.map(b => b.id);
+    onFormSubmit({...data, bookIds });
     const memberName = members.find(m => m.id === data.memberId)?.name;
     toast({
-      title: "Book Checked Out",
-      description: `"${bookTitle}" checked out to ${memberName} is due on ${format(data.dueDate, "PPP")}.`,
+      title: "Books Checked Out",
+      description: `${books.length} book(s) checked out to ${memberName} are due on ${format(data.dueDate, "PPP")}.`,
     });
   }
 
@@ -130,7 +135,7 @@ export default function CheckOutForm({ bookTitle, members, onFormSubmit }: Check
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Check Out Book</Button>
+        <Button type="submit" className="w-full">Confirm Checkout</Button>
       </form>
     </Form>
   )

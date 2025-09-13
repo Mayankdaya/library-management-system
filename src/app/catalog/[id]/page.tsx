@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookUp, UserCheck, Library, Loader2, Sparkles, Star } from 'lucide-react';
+import { ArrowLeft, BookUp, UserCheck, Library, Loader2, Sparkles, Star, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import bookCovers from '@/lib/placeholder-images.json';
 import { cn } from '@/lib/utils';
@@ -18,12 +18,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCheckout } from '@/hooks/use-checkout';
 
 export default function BookDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { id } = params;
   const { toast } = useToast();
+  const { checkoutItems, addToCheckout } = useCheckout();
 
   const [book, setBook] = useState<Book | null>(null);
   const [summary, setSummary] = useState<string>('');
@@ -32,6 +34,8 @@ export default function BookDetailPage() {
   const [newReview, setNewReview] = useState({ rating: 0, comment: '', memberId: '' });
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avgRating, setAvgRating] = useState(0);
+
+  const isBookInCheckout = book ? checkoutItems.some(item => item.id === book.id) : false;
 
   useEffect(() => {
     if (id) {
@@ -102,6 +106,16 @@ export default function BookDetailPage() {
         title: 'Review Submitted',
         description: 'Thank you for your feedback!',
     });
+  };
+
+  const handleAddToCart = () => {
+    if (book) {
+      addToCheckout(book);
+      toast({
+        title: 'Added to Checkout',
+        description: `"${book.title}" has been added to your checkout list.`,
+      });
+    }
   };
   
   if (!book) {
@@ -221,7 +235,10 @@ export default function BookDetailPage() {
 
                 <div className="flex gap-4">
                     {book.status === 'Available' ? (
-                        <Button><BookUp className="mr-2"/> Check Out</Button>
+                        <Button onClick={handleAddToCart} disabled={isBookInCheckout}>
+                            <ShoppingCart className="mr-2 h-4 w-4" /> 
+                            {isBookInCheckout ? 'Added to Checkout' : 'Add to Checkout'}
+                        </Button>
                     ) : (
                         <Button><UserCheck className="mr-2"/> Reserve</Button>
                     )}
