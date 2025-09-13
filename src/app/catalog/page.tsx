@@ -1,92 +1,103 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Book, Member } from '@/types';
-import { initialBooks, initialMembers } from '@/lib/data';
 import Header from '@/components/Header';
 import BookTable from '@/components/BookTable';
 import SuggestedReads from '@/components/SuggestedReads';
 import Dashboard from '@/components/Dashboard';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
+import { supabase } from '@/lib/supabase';
 
 export default function CatalogPage() {
   const router = useRouter();
-  const [books, setBooks] = useState<Book[]>(initialBooks);
-  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const { clearCheckout } = useCheckout();
 
-  const handleAddBook = (newBook: Omit<Book, 'id' | 'status'>) => {
-    setBooks(prevBooks => [
-      ...prevBooks,
-      {
-        ...newBook,
-        id: Date.now(),
-        status: 'Available',
-        reservations: [],
-      },
-    ]);
+  useEffect(() => {
+    const fetchBooks = async () => {
+      const { data, error } = await supabase.from('books').select('*');
+      if (data) setBooks(data);
+    };
+    const fetchMembers = async () => {
+      const { data, error } = await supabase.from('members').select('*');
+      if (data) setMembers(data);
+    };
+    fetchBooks();
+    fetchMembers();
+  }, []);
+
+  const handleAddBook = async (newBook: Omit<Book, 'id' | 'status'>) => {
+    const { data, error } = await supabase.from('books').insert([{ ...newBook, status: 'Available', reservations: [] }]).select();
+    if (data) {
+      setBooks(prevBooks => [...prevBooks, data[0]]);
+    }
   };
 
-  const handleCheckOut = (bookIds: number[], memberId: number, dueDate: string) => {
-    setBooks(prevBooks =>
-      prevBooks.map(book =>
-        bookIds.includes(book.id)
-          ? {
-              ...book,
-              status: 'Checked Out',
-              memberId: memberId,
-              checkoutDate: new Date().toISOString().split('T')[0],
-              dueDate,
-            }
-          : book
-      )
+  const handleCheckOut = async (bookIds: number[], memberId: number, dueDate: string) => {
+    const updates = bookIds.map(id => 
+      supabase.from('books').update({
+        status: 'Checked Out',
+        memberId: memberId,
+        checkoutDate: new Date().toISOString().split('T')[0],
+        dueDate,
+      }).eq('id', id)
     );
-    // Clear the cart after checkout
+    await Promise.all(updates);
+
+    const { data: updatedBooks } = await supabase.from('books').select('*');
+    if (updatedBooks) setBooks(updatedBooks);
+    
     clearCheckout();
-    // Redirect to catalog page to see the result
     router.push('/catalog');
   };
 
-  const handleReturnBook = (bookId: number) => {
-    setBooks(prevBooks =>
-      prevBooks.map(book => {
-        if (book.id === bookId) {
-          const newBook: Book = {
-            ...book,
-            status: 'Available',
-            memberId: undefined,
-            checkoutDate: undefined,
-            dueDate: undefined,
-          };
-          if (book.reservations && book.reservations.length > 0) {
-            newBook.status = 'Checked Out';
-            newBook.memberId = book.reservations[0];
-            newBook.checkoutDate = new Date().toISOString().split('T')[0];
-            // Due 2 weeks from now
-            newBook.dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            newBook.reservations = book.reservations.slice(1);
-          }
-          return newBook;
-        }
-        return book;
-      })
-    );
+  const handleReturnBook = async (bookId: number) => {
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+
+    let updateData: Partial<Book> = {
+      status: 'Available',
+      memberId: undefined,
+      checkoutDate: undefined,
+      dueDate: undefined,
+    };
+
+    if (book.reservations && book.reservations.length > 0) {
+      const nextMemberId = book.reservations[0];
+      const remainingReservations = book.reservations.slice(1);
+      updateData = {
+        status: 'Checked Out',
+        memberId: nextMemberId,
+        checkoutDate: new Date().toISOString().split('T')[0],
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        reservations: remainingReservations,
+      };
+    }
+    
+    const { data, error } = await supabase.from('books').update(updateData).eq('id', bookId).select();
+    
+    if (data) {
+       const { data: updatedBooks } = await supabase.from('books').select('*');
+       if (updatedBooks) setBooks(updatedBooks);
+    }
   };
   
-  const handleReserveBook = (bookId: number, memberId: number) => {
-    setBooks(prevBooks =>
-      prevBooks.map(book =>
-        book.id === bookId
-          ? {
-              ...book,
-              reservations: [...(book.reservations || []), memberId],
-            }
-          : book
-      )
-    );
+  const handleReserveBook = async (bookId: number, memberId: number) => {
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+
+    const newReservations = [...(book.reservations || []), memberId];
+    const { data, error } = await supabase.from('books').update({ reservations: newReservations }).eq('id', bookId).select();
+    
+    if (data) {
+       const { data: updatedBooks } = await supabase.from('books').select('*');
+       if (updatedBooks) setBooks(updatedBooks);
+    }
   }
 
   const filteredBooks = useMemo(() => {

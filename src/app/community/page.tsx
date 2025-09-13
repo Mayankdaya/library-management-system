@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { initialMembers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -35,10 +33,20 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/lib/supabase';
+import type { Member } from '@/types';
 
 
 export default function CommunityPage() {
     const { toast } = useToast();
+    const [members, setMembers] = useState<Member[]>([]);
+    useEffect(() => {
+        const fetchMembers = async () => {
+            const { data } = await supabase.from('members').select('*');
+            if (data) setMembers(data);
+        };
+        fetchMembers();
+    }, []);
 
     const [events, setEvents] = useState([
         {
@@ -139,16 +147,13 @@ export default function CommunityPage() {
                 rsvps: [...event.rsvps, memberId],
             };
             
-            const member = initialMembers.find(m => m.id === memberId);
+            const member = members.find(m => m.id === memberId);
             toast({
                 title: 'RSVP Successful!',
                 description: `${member?.name} is now registered for "${event.title}".`,
             });
             
             setSelectedMemberId(null);
-            // We need a way to close the dialog. Since we can't control it from here directly,
-            // we rely on the user to close it or handle it via a shared state if we refactor.
-            // For now, this just updates the data. A document event could be a workaround.
             document.dispatchEvent(new Event(`close-dialog-${eventId}`));
 
 
@@ -156,7 +161,7 @@ export default function CommunityPage() {
         });
     };
     
-    const getMemberName = (memberId: number) => initialMembers.find(m => m.id === memberId)?.name || 'Unknown Member';
+    const getMemberName = (memberId: number) => members.find(m => m.id === memberId)?.name || 'Unknown Member';
     const getMemberInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
 
     return (
@@ -255,7 +260,7 @@ export default function CommunityPage() {
                                                             <SelectValue placeholder="Select a member..." />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {initialMembers.map(member => (
+                                                            {members.map(member => (
                                                                 <SelectItem key={member.id} value={member.id.toString()} disabled={event.rsvps.includes(member.id)}>
                                                                     <div className="flex items-center justify-between w-full">
                                                                         <span>{member.name}</span>
@@ -351,5 +356,3 @@ export default function CommunityPage() {
         </TooltipProvider>
     );
 }
-
-    

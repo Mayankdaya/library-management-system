@@ -1,7 +1,6 @@
-
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,8 @@ import { ArrowLeft, Book as BookIcon, ShoppingCart, Trash2 } from 'lucide-react'
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { initialMembers } from '@/lib/data';
+import { supabase } from '@/lib/supabase';
+import type { Member } from '@/types';
 import CheckOutForm from '@/components/CheckOutForm';
 import { useToast } from '@/hooks/use-toast';
 import bookCovers from '@/lib/placeholder-images.json';
@@ -20,22 +20,43 @@ export default function CheckoutPage() {
     const { checkoutItems, removeFromCheckout, clearCheckout } = useCheckout();
     const router = useRouter();
     const { toast } = useToast();
+    const [members, setMembers] = useState<Member[]>([]);
 
-    // This would typically come from a global state/context after login
-    // For now, we simulate being on the main catalog page to get the handler
-    const [allBooks, setAllBooks] = React.useState<any[]>([]); // This state is just to pass the function
-    const handleCheckOut = (bookIds: number[], memberId: number, dueDate: string) => {
-        // In a real app, this would be a single API call.
-        // Here, we'll simulate it and then redirect.
-        // The actual state update happens in `catalog/page.tsx` for now.
-        // To make this real, we'd need a global state management for books (like Zustand or Redux)
-        
-        clearCheckout();
-        toast({
-            title: "Checkout Successful!",
-            description: "The books have been checked out."
-        });
-        router.push('/catalog');
+    useEffect(() => {
+        const fetchMembers = async () => {
+            const { data, error } = await supabase.from('members').select('*');
+            if (data) setMembers(data);
+        }
+        fetchMembers();
+    }, []);
+
+    const handleCheckOut = async (bookIds: number[], memberId: number, dueDate: string) => {
+        const updates = bookIds.map(id => 
+            supabase.from('books').update({
+                status: 'Checked Out',
+                memberId: memberId,
+                checkoutDate: new Date().toISOString().split('T')[0],
+                dueDate,
+            }).eq('id', id)
+        );
+        const results = await Promise.all(updates);
+
+        const hasError = results.some(res => res.error);
+
+        if (!hasError) {
+            clearCheckout();
+            toast({
+                title: "Checkout Successful!",
+                description: "The books have been checked out."
+            });
+            router.push('/catalog');
+        } else {
+             toast({
+                variant: 'destructive',
+                title: "Checkout Failed",
+                description: "Could not check out the books. Please try again."
+            });
+        }
     };
 
     return (
@@ -118,7 +139,7 @@ export default function CheckoutPage() {
                                 <CardContent>
                                     <CheckOutForm 
                                         books={checkoutItems}
-                                        members={initialMembers}
+                                        members={members}
                                         onFormSubmit={({ bookIds, memberId, dueDate }) => handleCheckOut(bookIds, memberId, dueDate.toISOString().split('T')[0])}
                                     />
                                 </CardContent>

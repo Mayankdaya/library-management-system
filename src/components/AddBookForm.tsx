@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { generateBook, type GenerateBookOutput } from "@/ai/flows/generate-book"
 import { Loader2, Sparkles, Image as ImageIcon } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
@@ -33,11 +32,9 @@ type AddBookFormValues = z.infer<typeof formSchema>;
 
 interface AddBookFormProps {
   onFormSubmit: (data: AddBookFormValues) => void;
-  onBookGenerated: (book: GenerateBookOutput) => void;
-  generatedBook: GenerateBookOutput | null;
 }
 
-export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBook }: AddBookFormProps) {
+export default function AddBookForm({ onFormSubmit }: AddBookFormProps) {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
@@ -54,13 +51,6 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
     },
   })
   
-  useEffect(() => {
-    if (generatedBook) {
-      form.reset(generatedBook);
-    }
-  }, [generatedBook, form]);
-
-
   function onSubmit(data: AddBookFormValues) {
     onFormSubmit(data);
     toast({
@@ -71,33 +61,11 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
   }
 
   const handleGenerateBook = async () => {
-    if (!topic) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter a topic to generate a book.",
-      });
-      return;
-    }
-    setIsGenerating(true);
-    try {
-      const book = await generateBook({ topic });
-      onBookGenerated(book);
-      toast({
-        title: "Book Generated!",
-        description: "The form has been pre-filled with the AI-generated book.",
-      });
-      setAiDialogOpen(false);
-    } catch (error) {
-      console.error("Failed to generate book:", error);
-      toast({
-        variant: "destructive",
-        title: "AI Error",
-        description: "Could not generate book details. Please try again.",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+    // This functionality is removed in favor of Supabase
+    toast({
+      title: "AI Generation Disabled",
+      description: "AI book generation is currently disabled.",
+    });
   }
 
   return (

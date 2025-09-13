@@ -4,37 +4,25 @@ import * as React from 'react'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { suggestReads, type SuggestedReadsInput, type SuggestedReadsOutput } from '@/ai/flows/suggested-reads'
 import { useToast } from '@/hooks/use-toast'
 
 interface SuggestedReadsProps {
-  borrowingHistory: SuggestedReadsInput['borrowingHistory'];
+  borrowingHistory: any[];
 }
 
 export default function SuggestedReads({ borrowingHistory }: SuggestedReadsProps) {
-  const [suggestions, setSuggestions] = React.useState<SuggestedReadsOutput['suggestions']>([]);
+  const [suggestions, setSuggestions] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
 
   const handleGetSuggestions = async () => {
     setIsLoading(true);
-    setSuggestions([]);
-    try {
-      const result = await suggestReads({
-        borrowingHistory,
-        numberOfSuggestions: 3,
-      });
-      setSuggestions(result.suggestions);
-    } catch (error) {
-      console.error("Failed to get suggestions:", error);
-      toast({
-        variant: "destructive",
-        title: "AI Error",
-        description: "Could not fetch reading suggestions. Please try again later.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Genkit flow removed
+    toast({
+        title: "AI Suggestions Disabled",
+        description: "AI-powered suggestions are currently disabled."
+    })
+    setIsLoading(false);
   };
 
   return (

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Member } from '@/types';
-import { initialMembers } from '@/lib/data';
+import { supabase } from '@/lib/supabase';
 import Header from '@/components/Header';
 import {
   Table,
@@ -32,29 +32,38 @@ import MemberForm from '@/components/MemberForm';
 import { useToast } from '@/hooks/use-toast';
 
 export default function MembersPage() {
-  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [members, setMembers] = useState<Member[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const { toast } = useToast();
 
-  const handleFormSubmit = (memberData: Omit<Member, 'id' | 'joinDate'>) => {
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const { data, error } = await supabase.from('members').select('*');
+      if (data) setMembers(data);
+    };
+    fetchMembers();
+  }, []);
+
+  const handleFormSubmit = async (memberData: Omit<Member, 'id' | 'joinDate'>) => {
     if (selectedMember) {
       // Edit existing member
-      setMembers(
-        members.map(m =>
-          m.id === selectedMember.id ? { ...m, ...memberData } : m
-        )
-      );
-      toast({ title: 'Member Updated', description: `${memberData.name}'s details have been updated.` });
+      const { data, error } = await supabase.from('members').update(memberData).eq('id', selectedMember.id).select();
+      if (data) {
+        setMembers(members.map(m => m.id === selectedMember.id ? data[0] : m));
+        toast({ title: 'Member Updated', description: `${memberData.name}'s details have been updated.` });
+      }
     } else {
       // Add new member
-      const newMember = {
+      const newMemberData = {
         ...memberData,
-        id: Date.now(),
         joinDate: new Date().toISOString().split('T')[0],
       };
-      setMembers([...members, newMember]);
-      toast({ title: 'Member Added', description: `${newMember.name} has been added to the library.` });
+      const { data, error } = await supabase.from('members').insert([newMemberData]).select();
+      if (data) {
+        setMembers([...members, data[0]]);
+        toast({ title: 'Member Added', description: `${data[0].name} has been added to the library.` });
+      }
     }
     setSelectedMember(null);
     setDialogOpen(false);
@@ -70,10 +79,13 @@ export default function MembersPage() {
     setDialogOpen(true);
   }
 
-  const handleDelete = (memberId: number) => {
+  const handleDelete = async (memberId: number) => {
     const memberName = members.find(m => m.id === memberId)?.name;
-    setMembers(members.filter(m => m.id !== memberId));
-    toast({ variant: 'destructive', title: 'Member Deleted', description: `${memberName} has been removed from the system.` });
+    const { error } = await supabase.from('members').delete().eq('id', memberId);
+    if (!error) {
+      setMembers(members.filter(m => m.id !== memberId));
+      toast({ variant: 'destructive', title: 'Member Deleted', description: `${memberName} has been removed from the system.` });
+    }
   };
 
   return (

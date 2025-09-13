@@ -1,8 +1,11 @@
 export interface Review {
-  memberId: number;
+  id: number;
+  book_id: number;
+  member_id: number;
   rating: number; // 1 to 5
   comment: string;
   date: string;
+  members: Member; // Joined data
 }
 
 export interface Book {

@@ -37,7 +37,6 @@ import AddBookForm from './AddBookForm';
 import { Badge } from './ui/badge';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
-import type { GenerateBookOutput } from '@/ai/flows/generate-book';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import bookCovers from '@/lib/placeholder-images.json';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
@@ -56,7 +55,6 @@ interface BookTableProps {
 
 export default function BookTable({ books, members, onSearch, onFilter, onAddBook, onCheckOut, onReturnBook, onReserveBook }: BookTableProps) {
   const [addBookOpen, setAddBookOpen] = React.useState(false);
-  const [generatedBook, setGeneratedBook] = React.useState<GenerateBookOutput | null>(null);
   const { toast } = useToast();
   const { checkoutItems, addToCheckout } = useCheckout();
 
@@ -118,14 +116,10 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                         <DialogTitle>Add a New Book</DialogTitle>
                     </DialogHeader>
                     <AddBookForm 
-                        key={generatedBook ? JSON.stringify(generatedBook) : 'manual'}
                         onFormSubmit={(data) => {
                             onAddBook(data);
                             setAddBookOpen(false);
-                            setGeneratedBook(null);
                         }}
-                        onBookGenerated={setGeneratedBook}
-                        generatedBook={generatedBook}
                     />
                 </DialogContent>
             </Dialog>

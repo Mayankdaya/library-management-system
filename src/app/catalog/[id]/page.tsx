@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import type { Book, Review } from '@/types';
-import { initialBooks, initialMembers } from '@/lib/data';
+import type { Book, Review, Member } from '@/types';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,13 +11,13 @@ import { ArrowLeft, BookUp, UserCheck, Library, Loader2, Sparkles, Star, Shoppin
 import Image from 'next/image';
 import bookCovers from '@/lib/placeholder-images.json';
 import { cn } from '@/lib/utils';
-import { summarizeBook } from '@/ai/flows/summarize-book';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
+import { supabase } from '@/lib/supabase';
 
 export default function BookDetailPage() {
   const router = useRouter();
@@ -34,47 +33,53 @@ export default function BookDetailPage() {
   const [newReview, setNewReview] = useState({ rating: 0, comment: '', memberId: '' });
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avgRating, setAvgRating] = useState(0);
+  const [members, setMembers] = useState<Member[]>([]);
 
   const isBookInCheckout = book ? checkoutItems.some(item => item.id === book.id) : false;
 
   useEffect(() => {
     if (id) {
-      const foundBook = initialBooks.find(b => b.id === parseInt(id as string, 10));
-      if (foundBook) {
-        setBook(foundBook);
-        const initialReviews = foundBook.reviews || [];
-        setReviews(initialReviews);
-        if (initialReviews.length > 0) {
+      const fetchBook = async () => {
+        const { data, error } = await supabase
+          .from('books')
+          .select('*, reviews(*, members(*))')
+          .eq('id', id)
+          .single();
+
+        if (data) {
+          setBook(data);
+          const initialReviews = data.reviews || [];
+          setReviews(initialReviews);
+          if (initialReviews.length > 0) {
             const totalRating = initialReviews.reduce((acc, review) => acc + review.rating, 0);
             setAvgRating(totalRating / initialReviews.length);
+          }
+        } else {
+          router.push('/catalog');
         }
-      } else {
-        router.push('/catalog');
+      };
+      
+      const fetchMembers = async () => {
+        const {data, error} = await supabase.from('members').select('*');
+        if(data) setMembers(data);
       }
+
+      fetchBook();
+      fetchMembers();
     }
   }, [id, router]);
 
   const handleGenerateSummary = async () => {
     if (!book) return;
     setIsSummaryLoading(true);
-    try {
-      const result = await summarizeBook({ title: book.title, author: book.author });
-      setSummary(result.summary);
-    } catch (error) {
-      console.error('Failed to generate summary:', error);
-      toast({
-        variant: 'destructive',
-        title: 'AI Error',
-        description: 'Could not generate a summary. Please try again.',
-      });
-    } finally {
-      setIsSummaryLoading(false);
-    }
+    // Genkit flow removed, so we'll just have a placeholder summary
+    setSummary(`This is a placeholder summary for ${book.title}.`);
+    setIsSummaryLoading(false);
   };
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newReview.rating === 0 || !newReview.comment || !newReview.memberId) {
+    if (!book || newReview.rating === 0 || !newReview.comment || !newReview.memberId) {
         toast({
             variant: 'destructive',
             title: 'Incomplete Review',
@@ -82,30 +87,36 @@ export default function BookDetailPage() {
         });
         return;
     }
-    const review: Review = {
-        memberId: parseInt(newReview.memberId),
-        rating: newReview.rating,
-        comment: newReview.comment,
-        date: new Date().toISOString(),
-    };
     
-    const updatedReviews = [...reviews, review];
-    setReviews(updatedReviews);
-    
-    // Update the book in the global state (for demo purposes)
-    const bookIndex = initialBooks.findIndex(b => b.id === book!.id);
-    if(bookIndex !== -1) {
-        initialBooks[bookIndex].reviews = updatedReviews;
+    const reviewToInsert = {
+      book_id: book.id,
+      member_id: parseInt(newReview.memberId),
+      rating: newReview.rating,
+      comment: newReview.comment,
+      date: new Date().toISOString(),
     }
 
-    const totalRating = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
-    setAvgRating(totalRating / updatedReviews.length);
-    
-    setNewReview({ rating: 0, comment: '', memberId: '' });
-    toast({
-        title: 'Review Submitted',
-        description: 'Thank you for your feedback!',
-    });
+    const { data: newReviewData, error } = await supabase.from('reviews').insert(reviewToInsert).select('*, members(*)').single();
+
+    if (newReviewData) {
+      const updatedReviews = [...reviews, newReviewData];
+      setReviews(updatedReviews);
+
+      const totalRating = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+      setAvgRating(totalRating / updatedReviews.length);
+      
+      setNewReview({ rating: 0, comment: '', memberId: '' });
+      toast({
+          title: 'Review Submitted',
+          description: 'Thank you for your feedback!',
+      });
+    } else {
+      toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not submit review. ' + error?.message,
+      });
+    }
   };
 
   const handleAddToCart = () => {
@@ -128,11 +139,11 @@ export default function BookDetailPage() {
   
   const getMemberName = (memberId?: number) => {
     if (!memberId) return 'N/A';
-    return initialMembers.find(m => m.id === memberId)?.name || 'Unknown Member';
+    return members.find(m => m.id === memberId)?.name || 'Unknown Member';
   };
   
-  const getMemberInitials = (memberId: number) => {
-      const name = getMemberName(memberId);
+  const getMemberInitials = (member: Member) => {
+      const name = member.name;
       if (name === 'N/A' || name === 'Unknown Member') return 'U';
       return name.split(' ').map(n => n[0]).join('');
   }
@@ -261,11 +272,11 @@ export default function BookDetailPage() {
                             {reviews.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((review, index) => (
                                 <div key={index} className="flex items-start gap-4 border-b border-border pb-4 last:border-b-0">
                                     <Avatar>
-                                        <AvatarFallback>{getMemberInitials(review.memberId)}</AvatarFallback>
+                                        <AvatarFallback>{getMemberInitials(review.members)}</AvatarFallback>
                                     </Avatar>
                                     <div className='flex-1'>
                                         <div className="flex items-center justify-between">
-                                            <p className='font-semibold'>{getMemberName(review.memberId)}</p>
+                                            <p className='font-semibold'>{review.members.name}</p>
                                             <div className="flex items-center gap-1">
                                                 {[...Array(5)].map((_, i) => (
                                                     <Star key={i} className={cn("h-4 w-4", i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
@@ -297,7 +308,7 @@ export default function BookDetailPage() {
                                     <SelectValue placeholder="Select a member to review as..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {initialMembers.map(member => (
+                                    {members.map(member => (
                                         <SelectItem key={member.id} value={member.id.toString()}>{member.name}</SelectItem>
                                     ))}
                                 </SelectContent>
