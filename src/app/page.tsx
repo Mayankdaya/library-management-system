@@ -136,6 +136,13 @@ export default function PremiumHomePage() {
                           transition={{ type: "spring", stiffness: 300 }}
                           animate={{
                             y: [0, -5, 0],
+                            transition: {
+                              duration: 1.5,
+                              repeat: Infinity,
+                              repeatType: 'reverse',
+                              ease: 'easeInOut',
+                              delay: index * 0.2
+                            }
                           }}
                         >
                           <Image 
@@ -178,8 +185,15 @@ export default function PremiumHomePage() {
                          <motion.div
                           whileHover={{ y: -8, scale: 1.05 }}
                           transition={{ type: "spring", stiffness: 300 }}
-                           animate={{
+                          animate={{
                             y: [0, -5, 0],
+                            transition: {
+                              duration: 1.5,
+                              repeat: Infinity,
+                              repeatType: 'reverse',
+                              ease: 'easeInOut',
+                              delay: (index + 5) * 0.2
+                            }
                           }}
                         >
                           <Image 
