@@ -156,7 +156,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
           </TableHeader>
           <TableBody>
             {books.length > 0 ? books.map((book) => (
-              <TableRow key={book.id} className={cn('border-white/10', isOverdue(book.dueDate) && 'bg-destructive/20')}>
+              <TableRow key={book.id} className={cn('border-white/10', isOverdue(book.dueDate) && 'bg-destructive/20 hover:bg-destructive/30')}>
                 <TableCell className="font-medium">
                   <Link href={`/catalog/${book.id}`} className="hover:underline">
                     {book.title}

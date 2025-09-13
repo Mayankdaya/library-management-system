@@ -85,7 +85,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
         description: "The form has been pre-filled with the AI-generated book.",
       });
       setAiDialogOpen(false);
-    } catch (error) {
+    } catch (error) => {
       console.error("Failed to generate book:", error);
       toast({
         variant: "destructive",
@@ -102,7 +102,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
       <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full">
-            <Sparkles className="mr-2" />
+            <Sparkles className="mr-2 h-4 w-4" />
             Add Book with AI
           </Button>
         </DialogTrigger>
@@ -124,9 +124,9 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
           <DialogFooter>
             <Button onClick={handleGenerateBook} disabled={isGenerating}>
               {isGenerating ? (
-                <Loader2 className="mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Sparkles className="mr-2" />
+                <Sparkles className="mr-2 h-4 w-4" />
               )}
               {isGenerating ? 'Generating...' : 'Generate Book'}
             </Button>
