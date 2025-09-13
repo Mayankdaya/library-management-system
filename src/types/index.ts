@@ -8,6 +8,7 @@ export interface Book {
   memberId?: number;
   checkoutDate?: string;
   dueDate?: string;
+  reservations?: number[]; // memberIds
 }
 
 export interface Member {

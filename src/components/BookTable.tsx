@@ -14,7 +14,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,13 +29,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Search, MoreVertical, BookUp, BookDown } from 'lucide-react';
+import { Plus, Search, MoreVertical, BookUp, BookDown, Library, UserCheck } from 'lucide-react';
 import AddBookForm from './AddBookForm';
 import CheckOutForm from './CheckOutForm';
 import { Badge } from './ui/badge';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import type { GenerateBookOutput } from '@/ai/flows/generate-book';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface BookTableProps {
   books: Book[];
@@ -42,20 +46,39 @@ interface BookTableProps {
   onAddBook: (book: Omit<Book, 'id' | 'status'>) => void;
   onCheckOut: (bookId: number, memberId: number, dueDate: string) => void;
   onReturnBook: (bookId: number) => void;
+  onReserveBook: (bookId: number, memberId: number) => void;
 }
 
-export default function BookTable({ books, members, onSearch, onFilter, onAddBook, onCheckOut, onReturnBook }: BookTableProps) {
+export default function BookTable({ books, members, onSearch, onFilter, onAddBook, onCheckOut, onReturnBook, onReserveBook }: BookTableProps) {
   const [addBookOpen, setAddBookOpen] = React.useState(false);
   const [checkOutBook, setCheckOutBook] = React.useState<Book | null>(null);
   const [generatedBook, setGeneratedBook] = React.useState<GenerateBookOutput | null>(null);
   const { toast } = useToast();
 
-  const handleReturn = (bookId: number, title: string) => {
-    onReturnBook(bookId);
+  const handleReturn = (book: Book) => {
+    onReturnBook(book.id);
+    const hasReservations = book.reservations && book.reservations.length > 0;
+    
+    let description = `"${book.title}" has been returned to the library.`;
+    if(hasReservations) {
+      const nextMember = members.find(m => m.id === book.reservations![0]);
+      description += ` It is now on hold for ${nextMember?.name || 'the next person'}.`
+    }
+
     toast({
       title: "Book Returned",
-      description: `"${title}" has been returned to the library.`
+      description,
+      duration: hasReservations ? 5000 : 3000,
     })
+  }
+
+  const handleReserve = (book: Book, memberId: number) => {
+    onReserveBook(book.id, memberId);
+    const member = members.find(m => m.id === memberId);
+    toast({
+        title: "Book Reserved",
+        description: `"${book.title}" has been reserved for ${member?.name}. They are position #${(book.reservations?.length || 0) + 1} in the queue.`
+    });
   }
 
   const getMemberName = (memberId?: number) => {
@@ -68,6 +91,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
   }
 
   return (
+    <TooltipProvider>
     <div className="space-y-4">
       <div className="glassmorphic p-6 rounded-lg">
         <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
@@ -134,9 +158,21 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                 <TableCell className="font-medium">{book.title}</TableCell>
                 <TableCell>{book.author}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Badge variant={book.status === 'Available' ? 'default' : (isOverdue(book.dueDate) ? 'destructive' : 'secondary')}>
-                    {isOverdue(book.dueDate) ? 'Overdue' : book.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={book.status === 'Available' ? 'default' : (isOverdue(book.dueDate) ? 'destructive' : 'secondary')}>
+                      {isOverdue(book.dueDate) ? 'Overdue' : book.status}
+                    </Badge>
+                    {book.reservations && book.reservations.length > 0 && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                           <Badge variant="outline"><Library className="h-3 w-3" /></Badge>
+                        </TooltipTrigger>
+                         <TooltipContent>
+                           <p>{book.reservations.length} reservation{book.reservations.length > 1 ? 's' : ''}. Next: {getMemberName(book.reservations[0])}</p>
+                         </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">{book.status === 'Checked Out' ? getMemberName(book.memberId) : 'N/A'}</TableCell>
                 <TableCell className={cn("hidden lg:table-cell", isOverdue(book.dueDate) && "text-destructive font-semibold")}>
@@ -157,10 +193,32 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                           <span>Check Out</span>
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem onClick={() => handleReturn(book.id, book.title)}>
-                          <BookDown className="mr-2 h-4 w-4" />
-                          <span>Return Book</span>
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem onClick={() => handleReturn(book)}>
+                            <BookDown className="mr-2 h-4 w-4" />
+                            <span>Return Book</span>
+                          </DropdownMenuItem>
+                           <DropdownMenuSub>
+                             <DropdownMenuSubTrigger>
+                               <UserCheck className="mr-2 h-4 w-4" />
+                               <span>Reserve</span>
+                             </DropdownMenuSubTrigger>
+                             <DropdownMenuPortal>
+                              <DropdownMenuSubContent className="glassmorphic">
+                                {members
+                                  .filter(m => m.id !== book.memberId && !book.reservations?.includes(m.id))
+                                  .map(member => (
+                                  <DropdownMenuItem key={member.id} onClick={() => handleReserve(book, member.id)}>
+                                    {member.name}
+                                  </DropdownMenuItem>
+                                ))}
+                                {members.filter(m => m.id !== book.memberId && !book.reservations?.includes(m.id)).length === 0 && (
+                                  <DropdownMenuItem disabled>No members to reserve</DropdownMenuItem>
+                                )}
+                              </DropdownMenuSubContent>
+                             </DropdownMenuPortal>
+                           </DropdownMenuSub>
+                        </>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -192,5 +250,6 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
         </DialogContent>
       </Dialog>
     </div>
+    </TooltipProvider>
   );
 }

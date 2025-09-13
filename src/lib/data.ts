@@ -14,6 +14,7 @@ export const initialBooks: Book[] = [
     isbn: '978-0061120084',
     genre: 'Fiction',
     status: 'Available',
+    reservations: [],
   },
   {
     id: 2,
@@ -25,6 +26,7 @@ export const initialBooks: Book[] = [
     memberId: 1,
     checkoutDate: '2023-10-01',
     dueDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 10 days ago
+    reservations: [3],
   },
   {
     id: 3,
@@ -33,6 +35,7 @@ export const initialBooks: Book[] = [
     isbn: '978-0743273565',
     genre: 'Classic',
     status: 'Available',
+    reservations: [],
   },
   {
     id: 4,
@@ -41,6 +44,7 @@ export const initialBooks: Book[] = [
     isbn: '978-0141439518',
     genre: 'Romance',
     status: 'Available',
+    reservations: [],
   },
   {
     id: 5,
@@ -52,6 +56,7 @@ export const initialBooks: Book[] = [
     memberId: 2,
     checkoutDate: '2023-10-15',
     dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 14 days from now
+    reservations: [],
   },
   {
     id: 6,
@@ -59,7 +64,8 @@ export const initialBooks: Book[] = [
     author: 'Frank Herbert',
     isbn: '978-0441013593',
     genre: 'Sci-Fi',
-    status: 'Available'
+    status: 'Available',
+    reservations: [],
   },
   {
     id: 7,
@@ -71,6 +77,7 @@ export const initialBooks: Book[] = [
     memberId: 3,
     checkoutDate: '2024-07-01',
     dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 days ago
+    reservations: [1, 2],
   },
   {
     id: 8,
@@ -78,7 +85,8 @@ export const initialBooks: Book[] = [
     author: 'Aldous Huxley',
     isbn: '978-0060850524',
     genre: 'Dystopian',
-    status: 'Available'
+    status: 'Available',
+    reservations: [],
   },
   {
     id: 9,
@@ -86,7 +94,8 @@ export const initialBooks: Book[] = [
     author: 'J.R.R. Tolkien',
     isbn: '978-0618640157',
     genre: 'Fantasy',
-    status: 'Available'
+    status: 'Available',
+    reservations: [],
   },
   {
     id: 10,
@@ -97,6 +106,7 @@ export const initialBooks: Book[] = [
     status: 'Checked Out',
     memberId: 1,
     checkoutDate: '2024-07-10',
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    reservations: [],
   }
 ];

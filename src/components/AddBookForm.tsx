@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { generateBook, type GenerateBookOutput } from "@/ai/flows/generate-book"
 import { Loader2, Sparkles } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Textarea } from "./ui/textarea"
 
@@ -43,13 +43,20 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
 
   const form = useForm<AddBookFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: generatedBook || {
+    defaultValues: {
       title: "",
       author: "",
       isbn: "",
       genre: "",
     },
   })
+  
+  useEffect(() => {
+    if (generatedBook) {
+      form.reset(generatedBook);
+    }
+  }, [generatedBook, form]);
+
 
   function onSubmit(data: AddBookFormValues) {
     onFormSubmit(data);
@@ -131,7 +138,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
             <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card/50 px-2 text-muted-foreground">
+            <span className="bg-card px-2 text-muted-foreground">
             Or add manually
             </span>
         </div>

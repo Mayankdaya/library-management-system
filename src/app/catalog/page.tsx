@@ -21,6 +21,7 @@ export default function CatalogPage() {
         ...newBook,
         id: Date.now(),
         status: 'Available',
+        reservations: [],
       },
     ]);
   };
@@ -43,19 +44,42 @@ export default function CatalogPage() {
 
   const handleReturnBook = (bookId: number) => {
     setBooks(prevBooks =>
+      prevBooks.map(book => {
+        if (book.id === bookId) {
+          const newBook = {
+            ...book,
+            status: 'Available',
+            memberId: undefined,
+            checkoutDate: undefined,
+            dueDate: undefined,
+          };
+          if (book.reservations && book.reservations.length > 0) {
+            newBook.status = 'Checked Out';
+            newBook.memberId = book.reservations[0];
+            newBook.checkoutDate = new Date().toISOString().split('T')[0];
+            // Due 2 weeks from now
+            newBook.dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            newBook.reservations = book.reservations.slice(1);
+          }
+          return newBook;
+        }
+        return book;
+      })
+    );
+  };
+  
+  const handleReserveBook = (bookId: number, memberId: number) => {
+    setBooks(prevBooks =>
       prevBooks.map(book =>
         book.id === bookId
           ? {
               ...book,
-              status: 'Available',
-              memberId: undefined,
-              checkoutDate: undefined,
-              dueDate: undefined,
+              reservations: [...(book.reservations || []), memberId],
             }
           : book
       )
     );
-  };
+  }
 
   const filteredBooks = useMemo(() => {
     return books
@@ -100,6 +124,7 @@ export default function CatalogPage() {
               onAddBook={handleAddBook}
               onCheckOut={handleCheckOut}
               onReturnBook={handleReturnBook}
+              onReserveBook={handleReserveBook}
             />
           </div>
           <div>
