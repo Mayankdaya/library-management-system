@@ -46,7 +46,7 @@ export default function CatalogPage() {
     setBooks(prevBooks =>
       prevBooks.map(book => {
         if (book.id === bookId) {
-          const newBook = {
+          const newBook: Book = {
             ...book,
             status: 'Available',
             memberId: undefined,

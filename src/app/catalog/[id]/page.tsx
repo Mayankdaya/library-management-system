@@ -127,7 +127,9 @@ export default function BookDetailPage() {
     return dueDate && new Date(dueDate) < new Date();
   }
 
-  const featuredBookCover = bookCovers.bookCovers[10];
+  const cover = book.coverImage 
+    ? { src: book.coverImage, width: 800, height: 1200, hint: 'ai generated' } 
+    : bookCovers.bookCovers[10];
 
   return (
     <div className="min-h-screen bg-transparent text-foreground font-body">
@@ -141,11 +143,11 @@ export default function BookDetailPage() {
           <div className="grid md:grid-cols-3">
             <div className="md:col-span-1">
               <Image
-                src={featuredBookCover.src}
+                src={cover.src}
                 alt={book.title}
-                width={featuredBookCover.width}
-                height={featuredBookCover.height}
-                data-ai-hint={featuredBookCover.hint}
+                width={cover.width}
+                height={cover.height}
+                data-ai-hint={cover.hint}
                 className="w-full h-auto object-cover"
               />
             </div>

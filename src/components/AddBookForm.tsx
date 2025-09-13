@@ -15,16 +15,18 @@ import {
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { generateBook, type GenerateBookOutput } from "@/ai/flows/generate-book"
-import { Loader2, Sparkles } from "lucide-react"
+import { Loader2, Sparkles, Image as ImageIcon } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Textarea } from "./ui/textarea"
+import Image from "next/image"
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   author: z.string().min(2, "Author must be at least 2 characters."),
   isbn: z.string().regex(/^(978|979)-?[0-9]{1,5}-?[0-9]{1,7}-?[0-9]{1,6}-?[0-9X]$|^[0-9]{13}$/, "Please enter a valid ISBN-13."),
   genre: z.string().min(2, "Genre must be at least 2 characters."),
+  coverImage: z.string().optional(),
 })
 
 type AddBookFormValues = z.infer<typeof formSchema>;
@@ -48,6 +50,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
       author: "",
       isbn: "",
       genre: "",
+      coverImage: "",
     },
   })
   
@@ -112,7 +115,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
-              Describe a topic or genre, and the AI will create a plausible book for you.
+              Describe a topic or genre, and the AI will create a plausible book for you, including a cover image.
             </p>
             <Textarea 
               placeholder="e.g., 'A sci-fi mystery on a remote space station' or 'A cozy fantasy about a magical bakery'"
@@ -145,6 +148,16 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+           {form.watch("coverImage") && (
+            <FormItem>
+              <FormLabel>Generated Cover</FormLabel>
+              <FormControl>
+                <div className="aspect-[2/3] w-32 rounded-md overflow-hidden relative bg-muted flex items-center justify-center">
+                  <Image src={form.watch("coverImage")!} alt="AI generated book cover" layout="fill" objectFit="cover" />
+                </div>
+              </FormControl>
+            </FormItem>
+          )}
           <FormField
             control={form.control}
             name="title"

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import type { Book, Member } from '@/types';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Table,
   TableBody,
@@ -31,7 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Search, MoreVertical, BookUp, BookDown, Library, UserCheck } from 'lucide-react';
+import { Plus, Search, MoreVertical, BookUp, BookDown, Library, UserCheck, Book as BookIcon } from 'lucide-react';
 import AddBookForm from './AddBookForm';
 import CheckOutForm from './CheckOutForm';
 import { Badge } from './ui/badge';
@@ -39,6 +40,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import type { GenerateBookOutput } from '@/ai/flows/generate-book';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import bookCovers from '@/lib/placeholder-images.json';
+
 
 interface BookTableProps {
   books: Book[];
@@ -155,14 +158,28 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
             </TableRow>
           </TableHeader>
           <TableBody>
-            {books.length > 0 ? books.map((book) => (
+            {books.length > 0 ? books.map((book) => {
+              const cover = book.coverImage ? { src: book.coverImage, width: 400, height: 600, hint: 'ai generated' } : bookCovers.bookCovers[(book.id - 1) % bookCovers.bookCovers.length];
+              return (
               <TableRow key={book.id} className={cn('border-white/10', isOverdue(book.dueDate) && 'bg-destructive/20 hover:bg-destructive/30')}>
                 <TableCell className="font-medium">
-                  <Link href={`/catalog/${book.id}`} className="hover:underline">
-                    {book.title}
-                  </Link>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+                      {cover.src ? (
+                          <Image src={cover.src} alt={book.title} width={48} height={64} data-ai-hint={cover.hint} className="w-full h-full object-cover" />
+                      ) : (
+                          <BookIcon className="w-6 h-6 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div>
+                      <Link href={`/catalog/${book.id}`} className="hover:underline font-semibold">
+                        {book.title}
+                      </Link>
+                       <p className="text-sm text-muted-foreground md:hidden">{book.author}</p>
+                    </div>
+                  </div>
                 </TableCell>
-                <TableCell>{book.author}</TableCell>
+                <TableCell className="hidden md:table-cell">{book.author}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   <div className="flex items-center gap-2">
                     <Badge variant={book.status === 'Available' ? 'default' : (isOverdue(book.dueDate) ? 'destructive' : 'secondary')}>
@@ -230,7 +247,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            )) : (
+            )}) : (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   No books found.

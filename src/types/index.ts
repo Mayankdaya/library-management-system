@@ -17,6 +17,7 @@ export interface Book {
   dueDate?: string;
   reservations?: number[]; // memberIds
   reviews?: Review[];
+  coverImage?: string; // Data URI for the cover image
 }
 
 export interface Member {
