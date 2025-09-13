@@ -38,10 +38,10 @@ export default function SuggestedReads({ borrowingHistory }: SuggestedReadsProps
   };
 
   return (
-    <Card className="glassmorphic sticky top-8">
+    <Card className="glassmorphic sticky top-24">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline">
-          <Sparkles className="h-6 w-6 text-accent" />
+          <Sparkles className="h-6 w-6 text-primary/80" />
           Suggested Reads
         </CardTitle>
         <CardDescription>
@@ -61,7 +61,7 @@ export default function SuggestedReads({ borrowingHistory }: SuggestedReadsProps
         {isLoading && (
           <div className="space-y-3 pt-4">
              {[...Array(3)].map((_, i) => (
-              <div key={i} className="p-4 border rounded-lg space-y-2 animate-pulse bg-muted/50">
+              <div key={i} className="p-4 border rounded-lg space-y-2 animate-pulse bg-muted/50 border-white/10">
                   <div className="h-5 w-3/4 rounded bg-background/80"></div>
                   <div className="h-4 w-1/2 rounded bg-background/80"></div>
                   <div className="h-10 w-full rounded bg-background/80"></div>
@@ -70,9 +70,9 @@ export default function SuggestedReads({ borrowingHistory }: SuggestedReadsProps
           </div>
         )}
         
-        {suggestions.length > 0 && (
+        {suggestions.length > 0 && !isLoading && (
           <div className="space-y-4 pt-4">
-            <h4 className="font-semibold font-headline text-lg">Here are some books you might like:</h4>
+            <h4 className="font-semibold font-headline text-lg text-primary/90">Here are some books you might like:</h4>
             {suggestions.map((book, index) => (
               <Card key={index} className="bg-background/50">
                 <CardHeader className="pb-4">
