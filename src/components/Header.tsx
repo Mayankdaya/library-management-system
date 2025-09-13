@@ -1,9 +1,16 @@
+
+'use client';
+
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, LogOut, LogIn } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
-const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (
+
+export const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
     </svg>
@@ -27,13 +34,15 @@ const MessageSquareQuoteIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const UserIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
-    </svg>
-);
+const HeaderContent = () => {
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
-export default function Header() {
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
   return (
     <header className={cn("glassmorphic sticky top-0 left-0 right-0 z-30")}>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -41,33 +50,54 @@ export default function Header() {
           <BookMarkedIcon className="h-8 w-8 text-foreground" />
           <h1 className="text-3xl font-headline font-bold">Verdant Library</h1>
         </Link>
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="/catalog" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-            <BookOpenIcon className="h-5 w-5" />
-            <span>Full Catalog</span>
-          </Link>
-          <Link href="/members" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-            <UsersIcon className="h-5 w-5" />
-            <span>Members</span>
-          </Link>
-           <Link href="/community" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-            <MessageSquareQuoteIcon className="h-5 w-5" />
-            <span>Community</span>
-          </Link>
-        </nav>
-        <div className="flex items-center gap-2">
-           <Button variant="ghost" size="icon" asChild>
-            <Link href="/settings">
-              <Settings className="h-6 w-6" />
-              <span className="sr-only">Settings</span>
+        {user && (
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/catalog" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
+              <BookOpenIcon className="h-5 w-5" />
+              <span>Full Catalog</span>
             </Link>
-          </Button>
-          <Button variant="ghost" size="icon">
-            <UserIcon className="h-6 w-6" />
-            <span className="sr-only">My Account</span>
-          </Button>
+            <Link href="/members" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
+              <UsersIcon className="h-5 w-5" />
+              <span>Members</span>
+            </Link>
+            <Link href="/community" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
+              <MessageSquareQuoteIcon className="h-5 w-5" />
+              <span>Community</span>
+            </Link>
+          </nav>
+        )}
+        <div className="flex items-center gap-2">
+          {user ? (
+            <>
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/settings">
+                  <Settings className="h-6 w-6" />
+                  <span className="sr-only">Settings</span>
+                </Link>
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-6 w-6" />
+                <span className="sr-only">Logout</span>
+              </Button>
+            </>
+          ) : (
+             <Button asChild>
+                <Link href="/login">
+                  <LogIn className="mr-2 h-5 w-5" />
+                  Login
+                </Link>
+              </Button>
+          )}
         </div>
       </div>
     </header>
   );
+}
+
+
+// A wrapper component is needed because useAuth can only be used in a client component
+export default function Header() {
+    const { loading } = useAuth();
+    if (loading) return null;
+    return <HeaderContent />
 }
