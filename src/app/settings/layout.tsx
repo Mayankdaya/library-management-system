@@ -46,14 +46,12 @@ export default function SettingsLayout({
                     <SidebarMenu>
                         {menuItems.map((item) => (
                         <SidebarMenuItem key={item.label}>
-                            <Link href={item.href} legacyBehavior passHref>
                             <SidebarMenuButton asChild isActive={pathname === item.href}>
-                                <a>
+                                <Link href={item.href}>
                                 <item.icon />
                                 <span>{item.label}</span>
-                                </a>
+                                </Link>
                             </SidebarMenuButton>
-                            </Link>
                         </SidebarMenuItem>
                         ))}
                     </SidebarMenu>
