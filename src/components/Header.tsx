@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { BookMarked, Users, BookOpen, User, ShoppingCart, Star } from 'lucide-react';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
   return (
-    <header className="bg-transparent text-primary-foreground absolute top-0 left-0 right-0 z-20">
+    <header className={cn("glassmorphic sticky top-0 left-0 right-0 z-30")}>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <BookMarked className="h-8 w-8 text-foreground" />
