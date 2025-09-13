@@ -71,5 +71,32 @@ export const initialBooks: Book[] = [
     memberId: 3,
     checkoutDate: '2024-07-01',
     dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 days ago
+  },
+  {
+    id: 8,
+    title: 'Brave New World',
+    author: 'Aldous Huxley',
+    isbn: '978-0060850524',
+    genre: 'Dystopian',
+    status: 'Available'
+  },
+  {
+    id: 9,
+    title: 'The Lord of the Rings',
+    author: 'J.R.R. Tolkien',
+    isbn: '978-0618640157',
+    genre: 'Fantasy',
+    status: 'Available'
+  },
+  {
+    id: 10,
+    title: 'Fahrenheit 451',
+    author: 'Ray Bradbury',
+    isbn: '978-1451673319',
+    genre: 'Sci-Fi',
+    status: 'Checked Out',
+    memberId: 1,
+    checkoutDate: '2024-07-10',
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   }
 ];

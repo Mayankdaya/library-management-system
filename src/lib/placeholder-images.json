@@ -1,0 +1,64 @@
+{
+  "bookCovers": [
+    {
+      "src": "https://picsum.photos/seed/book1/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "vintage book"
+    },
+    {
+      "src": "https://picsum.photos/seed/book2/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "abstract cover"
+    },
+    {
+      "src": "https://picsum.photos/seed/book3/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "minimalist design"
+    },
+    {
+      "src": "https://picsum.photos/seed/book4/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "nature photography"
+    },
+    {
+      "src": "https://picsum.photos/seed/book5/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "sci-fi art"
+    },
+    {
+      "src": "https://picsum.photos/seed/book6/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "fantasy landscape"
+    },
+    {
+      "src": "https://picsum.photos/seed/book7/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "portrait painting"
+    },
+    {
+      "src": "https://picsum.photos/seed/book8/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "dystopian city"
+    },
+    {
+      "src": "https://picsum.photos/seed/book9/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "epic illustration"
+    },
+    {
+      "src": "https://picsum.photos/seed/book10/400/600",
+      "width": 400,
+      "height": 600,
+      "hint": "mystery novel"
+    }
+  ]
+}
