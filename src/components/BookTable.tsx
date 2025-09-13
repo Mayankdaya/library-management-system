@@ -76,7 +76,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                 <DialogTrigger asChild>
                     <Button><Plus className="mr-2 h-4 w-4" /> Add New Book</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] glassmorphic">
+                <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Add a New Book</DialogTitle>
                     </DialogHeader>
@@ -178,7 +178,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
       </div>
       
       <Dialog open={!!checkOutBook} onOpenChange={(isOpen) => !isOpen && setCheckOutBook(null)}>
-        <DialogContent className="sm:max-w-[425px] glassmorphic">
+        <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
                 <DialogTitle>Check Out: {checkOutBook?.title}</DialogTitle>
             </DialogHeader>
