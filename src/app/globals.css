@@ -69,7 +69,7 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    background-image: linear-gradient(to bottom right, hsl(220 20% 10%), hsl(220 15% 5%));
+    background-image: linear-gradient(to bottom, hsl(220, 15%, 5%), hsl(220, 20%, 15%));
   }
 }
 
