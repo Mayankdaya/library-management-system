@@ -319,14 +319,18 @@ export default function CommunityPage() {
                             <CardContent>
                                 <div className="border-t border-border pt-4">
                                      <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold">A</div>
+                                        <Avatar>
+                                            <AvatarFallback>AJ</AvatarFallback>
+                                        </Avatar>
                                         <div className='flex-1'>
                                             <p className='font-semibold'>Alex J.</p>
                                             <p className="text-muted-foreground">I was completely shocked! I did not see that twist coming at all. What a masterpiece of suspense.</p>
                                         </div>
                                      </div>
                                       <div className="flex items-start gap-4 mt-4 ml-8">
-                                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold">S</div>
+                                        <Avatar>
+                                            <AvatarFallback>SL</AvatarFallback>
+                                        </Avatar>
                                         <div className='flex-1'>
                                             <p className='font-semibold'>Samantha L.</p>
                                             <p className="text-muted-foreground">Replying to Alex J.</p>
