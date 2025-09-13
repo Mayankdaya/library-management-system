@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import BookTable from '@/components/BookTable';
 import SuggestedReads from '@/components/SuggestedReads';
 import Dashboard from '@/components/Dashboard';
-import { useCheckout } from '@/hooks/use-checkout';
+import { useCheckout } from '@/hooks/use-checkout.tsx';
 
 export default function CatalogPage() {
   const router = useRouter();

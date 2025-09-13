@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils';
 import type { GenerateBookOutput } from '@/ai/flows/generate-book';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import bookCovers from '@/lib/placeholder-images.json';
-import { useCheckout } from '@/hooks/use-checkout';
+import { useCheckout } from '@/hooks/use-checkout.tsx';
 
 
 interface BookTableProps {

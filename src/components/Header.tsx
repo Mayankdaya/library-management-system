@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Settings, ShoppingCart } from 'lucide-react';
 import React from 'react';
-import { useCheckout } from '@/hooks/use-checkout';
+import { useCheckout } from '@/hooks/use-checkout.tsx';
 
 
 export const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (

@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCheckout } from '@/hooks/use-checkout';
+import { useCheckout } from '@/hooks/use-checkout.tsx';
 
 export default function BookDetailPage() {
   const router = useRouter();
