@@ -59,6 +59,12 @@
       "width": 400,
       "height": 600,
       "hint": "mystery novel"
+    },
+    {
+      "src": "https://picsum.photos/seed/bookdetail/800/1200",
+      "width": 800,
+      "height": 1200,
+      "hint": "detailed illustration"
     }
   ]
 }

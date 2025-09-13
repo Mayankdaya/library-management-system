@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import type { Book, Member } from '@/types';
+import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -156,7 +157,11 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
           <TableBody>
             {books.length > 0 ? books.map((book) => (
               <TableRow key={book.id} className={cn('border-white/10', isOverdue(book.dueDate) && 'bg-destructive/20')}>
-                <TableCell className="font-medium">{book.title}</TableCell>
+                <TableCell className="font-medium">
+                  <Link href={`/catalog/${book.id}`} className="hover:underline">
+                    {book.title}
+                  </Link>
+                </TableCell>
                 <TableCell>{book.author}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   <div className="flex items-center gap-2">
