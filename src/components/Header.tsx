@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import { Settings } from 'lucide-react';
 
 const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -49,12 +50,18 @@ export default function Header() {
             <UsersIcon className="h-5 w-5" />
             <span>Members</span>
           </Link>
-           <Link href="#" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
+           <Link href="/community" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
             <MessageSquareQuoteIcon className="h-5 w-5" />
             <span>Community</span>
           </Link>
         </nav>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+           <Button variant="ghost" size="icon" asChild>
+            <Link href="/settings">
+              <Settings className="h-6 w-6" />
+              <span className="sr-only">Settings</span>
+            </Link>
+          </Button>
           <Button variant="ghost" size="icon">
             <UserIcon className="h-6 w-6" />
             <span className="sr-only">My Account</span>
