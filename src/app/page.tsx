@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
-import { Spotlight } from '@/components/ui/spotlight';
-import { cn } from '@/lib/utils';
+import { Spotlight } from '@/components/ui/spotlight-new';
 import { CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -63,39 +62,41 @@ export default function PremiumHomePage() {
     <div className="min-h-screen w-full bg-transparent text-foreground font-body">
       <Header />
       <main className="w-full rounded-md flex flex-col items-center justify-center bg-transparent antialiased relative overflow-hidden pt-24 pb-12">
-        <Spotlight
-          className="-top-40 left-0 md:left-60 md:-top-20"
-          fill="hsl(var(--primary))"
-        />
-        <div className="p-4 max-w-7xl mx-auto relative z-10 w-full text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60 font-headline"
-          >
-            Verdant Library <br /> Your Gateway to Knowledge.
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-4 font-normal text-base text-neutral-300 max-w-2xl mx-auto"
-          >
-            Explore a universe of stories, knowledge, and adventure. Your next chapter awaits in our extensive collection.
-          </motion.p>
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-8 flex justify-center"
-          >
-            <Link href="/catalog">
-              <Button size="lg" className="bg-primary/80 hover:bg-primary text-primary-foreground">
-                Explore the Collection
-              </Button>
-            </Link>
-          </motion.div>
+        <div className="group relative w-full">
+            <Spotlight
+              className="-top-40 left-0 md:left-60 md:-top-20"
+              fill="hsl(var(--primary))"
+            />
+            <div className="p-4 max-w-7xl mx-auto relative z-10 w-full text-center">
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60 font-headline"
+              >
+                Verdant Library <br /> Your Gateway to Knowledge.
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="mt-4 font-normal text-base text-neutral-300 max-w-2xl mx-auto"
+              >
+                Explore a universe of stories, knowledge, and adventure. Your next chapter awaits in our extensive collection.
+              </motion.p>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                className="mt-8 flex justify-center"
+              >
+                <Link href="/catalog">
+                  <Button size="lg" className="bg-primary/80 hover:bg-primary text-primary-foreground">
+                    Explore the Collection
+                  </Button>
+                </Link>
+              </motion.div>
+            </div>
         </div>
 
         <motion.div 
@@ -256,5 +257,3 @@ export default function PremiumHomePage() {
     </div>
   );
 }
-
-    
