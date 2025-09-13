@@ -10,14 +10,6 @@ import { cn } from '@/lib/utils';
 import { CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { initialBooks } from '@/lib/data';
 import bookCovers from '@/lib/placeholder-images.json';
 
 const sectionVariants = {
@@ -40,8 +32,12 @@ export default function PremiumHomePage() {
     { text: "24/7 Online Access: Enjoy seamless reading anytime, anywhere with our digital library." },
   ];
 
-  const newArrivals = initialBooks.slice(0, 5);
-  const popularTitles = initialBooks.slice(5, 10);
+  const featuredBook = {
+      title: "The Midnight Library",
+      author: "Matt Haig",
+      description: "Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices... Would you have done anything differently, if you had the chance to undo your regrets?",
+      cover: bookCovers.bookCovers[0],
+  };
 
   const testimonials = [
     {
@@ -121,93 +117,56 @@ export default function PremiumHomePage() {
                 </p>
             </div>
         </motion.div>
-
-        <motion.div 
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="mt-24 max-w-7xl mx-auto z-10 w-full p-4"
-        >
-          <section className="glassmorphic p-8 md:p-12">
-            <h2 className="text-3xl font-bold font-headline mb-8 text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">New Arrivals</h2>
-            <Carousel opts={{ align: "start", loop: true }} className="w-full">
-              <CarouselContent>
-                {newArrivals.map((book, index) => (
-                  <CarouselItem key={book.id} className="md:basis-1/3 lg:basis-1/4">
-                    <Card className="bg-transparent border-none shadow-none">
-                      <CardContent className="flex flex-col items-center justify-center p-0">
-                        <motion.div
-                          whileHover={{ y: -8, scale: 1.05 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                           style={{
-                            animation: `float 3s ease-in-out infinite ${index * 0.2}s`,
-                          }}
-                        >
-                          <Image 
-                            src={bookCovers.bookCovers[index].src} 
-                            alt={book.title} 
-                            width={bookCovers.bookCovers[index].width}
-                            height={bookCovers.bookCovers[index].height}
-                            data-ai-hint={bookCovers.bookCovers[index].hint}
-                            className="rounded-lg shadow-2xl h-64 w-auto object-cover" 
-                          />
-                        </motion.div>
-                        <h3 className="font-semibold mt-4 text-center">{book.title}</h3>
-                        <p className="text-sm text-muted-foreground text-center">{book.author}</p>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-[-1rem] md:left-[-2rem]" />
-              <CarouselNext className="right-[-1rem] md:right-[-2rem]" />
-            </Carousel>
-          </section>
-        </motion.div>
         
         <motion.div 
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
-          className="mt-24 max-w-7xl mx-auto z-10 w-full p-4"
+          className="mt-24 max-w-5xl mx-auto z-10 w-full p-4"
         >
-          <section className="glassmorphic p-8 md:p-12">
-            <h2 className="text-3xl font-bold font-headline mb-8 text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">Popular Titles</h2>
-            <Carousel opts={{ align: "start", loop: true }} className="w-full">
-              <CarouselContent>
-                {popularTitles.map((book, index) => (
-                  <CarouselItem key={book.id} className="md:basis-1/3 lg:basis-1/4">
-                    <Card className="bg-transparent border-none shadow-none">
-                      <CardContent className="flex flex-col items-center justify-center p-0">
-                         <motion.div
+            <h2 className="text-3xl font-bold font-headline mb-8 text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">Featured Book</h2>
+            <Card className="glassmorphic overflow-hidden md:grid md:grid-cols-2 items-center">
+                <CardContent className="p-8 md:p-12">
+                     <motion.div
                           whileHover={{ y: -8, scale: 1.05 }}
                           transition={{ type: "spring", stiffness: 300 }}
                            style={{
-                            animation: `float 3s ease-in-out infinite ${(index + 5) * 0.2}s`,
+                            animation: `float 3s ease-in-out infinite`,
                           }}
+                          className="md:hidden mb-8"
                         >
-                          <Image 
-                            src={bookCovers.bookCovers[index + 5].src} 
-                            alt={book.title}
-                            width={bookCovers.bookCovers[index + 5].width}
-                            height={bookCovers.bookCovers[index + 5].height}
-                            data-ai-hint={bookCovers.bookCovers[index + 5].hint}
-                            className="rounded-lg shadow-2xl h-64 w-auto object-cover" 
-                          />
-                        </motion.div>
-                        <h3 className="font-semibold mt-4 text-center">{book.title}</h3>
-                        <p className="text-sm text-muted-foreground text-center">{book.author}</p>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-[-1rem] md:left-[-2rem]" />
-              <CarouselNext className="right-[-1rem] md:right-[-2rem]" />
-            </Carousel>
-          </section>
+                        <Image 
+                            src={featuredBook.cover.src} 
+                            alt={featuredBook.title}
+                            width={featuredBook.cover.width}
+                            height={featuredBook.cover.height}
+                            data-ai-hint={featuredBook.cover.hint}
+                            className="rounded-lg shadow-2xl h-auto w-full max-w-xs mx-auto object-cover" 
+                        />
+                    </motion.div>
+                    <h3 className="text-2xl font-bold font-headline text-primary/90">{featuredBook.title}</h3>
+                    <p className="text-lg text-muted-foreground mb-4">by {featuredBook.author}</p>
+                    <p className="italic text-muted-foreground">"{featuredBook.description}"</p>
+                     <Button size="lg" className="mt-6 bg-primary/80 hover:bg-primary text-primary-foreground">
+                        Learn More
+                    </Button>
+                </CardContent>
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="hidden md:block h-full"
+                    >
+                    <Image 
+                        src={featuredBook.cover.src} 
+                        alt={featuredBook.title}
+                        width={featuredBook.cover.width}
+                        height={featuredBook.cover.height}
+                        data-ai-hint={featuredBook.cover.hint}
+                        className="w-full h-full object-cover" 
+                    />
+                </motion.div>
+            </Card>
         </motion.div>
 
         <motion.div 
