@@ -11,7 +11,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['"PT Sans"', 'sans-serif'],
-        headline: ['"Literata"', 'serif'],
+        headline: ['"Plus Jakarta Sans"', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
