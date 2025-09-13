@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookMarked, Users, BookOpen, User, Star } from 'lucide-react';
+import { BookMarked, Users, BookOpen, User, Star, MessageSquareQuote } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
@@ -21,8 +21,8 @@ export default function Header() {
             <span>Members</span>
           </Link>
            <Link href="#" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-            <Star className="h-5 w-5" />
-            <span>Featured</span>
+            <MessageSquareQuote className="h-5 w-5" />
+            <span>Community</span>
           </Link>
         </nav>
         <div className="flex items-center gap-4">
