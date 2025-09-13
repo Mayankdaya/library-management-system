@@ -85,7 +85,7 @@ export default function AddBookForm({ onFormSubmit, onBookGenerated, generatedBo
         description: "The form has been pre-filled with the AI-generated book.",
       });
       setAiDialogOpen(false);
-    } catch (error) => {
+    } catch (error) {
       console.error("Failed to generate book:", error);
       toast({
         variant: "destructive",
