@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { CheckoutProvider } from '@/hooks/use-checkout.tsx';
+import { AuthProvider } from '@/hooks/use-auth.tsx';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
@@ -31,10 +32,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CheckoutProvider>
-            {children}
-            <Footer />
-          </CheckoutProvider>
+          <AuthProvider>
+            <CheckoutProvider>
+              {children}
+              <Footer />
+            </CheckoutProvider>
+          </AuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>

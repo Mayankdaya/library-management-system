@@ -9,9 +9,12 @@ import SuggestedReads from '@/components/SuggestedReads';
 import Dashboard from '@/components/Dashboard';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/use-auth';
+import { Loader2 } from 'lucide-react';
 
 export default function CatalogPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,17 +22,25 @@ export default function CatalogPage() {
   const { clearCheckout } = useCheckout();
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      const { data, error } = await supabase.from('books').select('*');
-      if (data) setBooks(data);
-    };
-    const fetchMembers = async () => {
-      const { data, error } = await supabase.from('members').select('*');
-      if (data) setMembers(data);
-    };
-    fetchBooks();
-    fetchMembers();
-  }, []);
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (user) {
+      const fetchBooks = async () => {
+        const { data, error } = await supabase.from('books').select('*');
+        if (data) setBooks(data);
+      };
+      const fetchMembers = async () => {
+        const { data, error } = await supabase.from('members').select('*');
+        if (data) setMembers(data);
+      };
+      fetchBooks();
+      fetchMembers();
+    }
+  }, [user]);
 
   const handleAddBook = async (newBook: Omit<Book, 'id' | 'status'>) => {
     const { data, error } = await supabase.from('books').insert([{ ...newBook, status: 'Available', reservations: [] }]).select();
@@ -126,6 +137,14 @@ export default function CatalogPage() {
   const borrowingHistory = useMemo(() => {
     return books.filter(book => book.status === 'Checked Out').map(({ title, author, genre }) => ({ title, author, genre }));
   }, [books]);
+  
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
 
 
   return (
