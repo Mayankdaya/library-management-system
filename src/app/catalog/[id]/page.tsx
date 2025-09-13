@@ -2,18 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import type { Book } from '@/types';
+import type { Book, Review } from '@/types';
 import { initialBooks, initialMembers } from '@/lib/data';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookUp, UserCheck, Library, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, BookUp, UserCheck, Library, Loader2, Sparkles, Star } from 'lucide-react';
 import Image from 'next/image';
 import bookCovers from '@/lib/placeholder-images.json';
 import { cn } from '@/lib/utils';
 import { summarizeBook } from '@/ai/flows/summarize-book';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function BookDetailPage() {
   const router = useRouter();
@@ -24,14 +28,23 @@ export default function BookDetailPage() {
   const [book, setBook] = useState<Book | null>(null);
   const [summary, setSummary] = useState<string>('');
   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  
+  const [newReview, setNewReview] = useState({ rating: 0, comment: '', memberId: '' });
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [avgRating, setAvgRating] = useState(0);
 
   useEffect(() => {
     if (id) {
       const foundBook = initialBooks.find(b => b.id === parseInt(id as string, 10));
       if (foundBook) {
         setBook(foundBook);
+        const initialReviews = foundBook.reviews || [];
+        setReviews(initialReviews);
+        if (initialReviews.length > 0) {
+            const totalRating = initialReviews.reduce((acc, review) => acc + review.rating, 0);
+            setAvgRating(totalRating / initialReviews.length);
+        }
       } else {
-        // Handle book not found, maybe redirect or show an error
         router.push('/catalog');
       }
     }
@@ -54,6 +67,42 @@ export default function BookDetailPage() {
       setIsSummaryLoading(false);
     }
   };
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newReview.rating === 0 || !newReview.comment || !newReview.memberId) {
+        toast({
+            variant: 'destructive',
+            title: 'Incomplete Review',
+            description: 'Please select a member, a rating, and write a comment.',
+        });
+        return;
+    }
+    const review: Review = {
+        memberId: parseInt(newReview.memberId),
+        rating: newReview.rating,
+        comment: newReview.comment,
+        date: new Date().toISOString(),
+    };
+    
+    const updatedReviews = [...reviews, review];
+    setReviews(updatedReviews);
+    
+    // Update the book in the global state (for demo purposes)
+    const bookIndex = initialBooks.findIndex(b => b.id === book!.id);
+    if(bookIndex !== -1) {
+        initialBooks[bookIndex].reviews = updatedReviews;
+    }
+
+    const totalRating = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+    setAvgRating(totalRating / updatedReviews.length);
+    
+    setNewReview({ rating: 0, comment: '', memberId: '' });
+    toast({
+        title: 'Review Submitted',
+        description: 'Thank you for your feedback!',
+    });
+  };
   
   if (!book) {
     return (
@@ -67,6 +116,12 @@ export default function BookDetailPage() {
     if (!memberId) return 'N/A';
     return initialMembers.find(m => m.id === memberId)?.name || 'Unknown Member';
   };
+  
+  const getMemberInitials = (memberId: number) => {
+      const name = getMemberName(memberId);
+      if (name === 'N/A' || name === 'Unknown Member') return 'U';
+      return name.split(' ').map(n => n[0]).join('');
+  }
 
   const isOverdue = (dueDate?: string) => {
     return dueDate && new Date(dueDate) < new Date();
@@ -77,8 +132,8 @@ export default function BookDetailPage() {
   return (
     <div className="min-h-screen bg-transparent text-foreground font-body">
       <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
-        <Button variant="outline" onClick={() => router.back()} className="mb-8">
+      <main className="container mx-auto px-4 py-8 pt-24 space-y-8">
+        <Button variant="outline" onClick={() => router.back()} className="mb-0">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Catalog
         </Button>
@@ -98,7 +153,7 @@ export default function BookDetailPage() {
               <CardHeader className="pb-4">
                 <CardTitle className="text-4xl">{book.title}</CardTitle>
                 <CardDescription className="text-lg">by {book.author}</CardDescription>
-                <div className="flex flex-wrap items-center gap-2 pt-2">
+                <div className="flex flex-wrap items-center gap-4 pt-2">
                   <Badge variant={book.status === 'Available' ? 'default' : (isOverdue(book.dueDate) ? 'destructive' : 'secondary')}>
                     {isOverdue(book.dueDate) ? 'Overdue' : book.status}
                   </Badge>
@@ -108,6 +163,12 @@ export default function BookDetailPage() {
                         <Library className="h-3 w-3" /> 
                         {book.reservations.length} Reservation{book.reservations.length > 1 ? 's' : ''}
                      </Badge>
+                   )}
+                   {reviews.length > 0 && (
+                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        <span>{avgRating.toFixed(1)} ({reviews.length} review{reviews.length > 1 ? 's' : ''})</span>
+                     </div>
                    )}
                 </div>
               </CardHeader>
@@ -167,6 +228,94 @@ export default function BookDetailPage() {
             </div>
           </div>
         </Card>
+        
+        <div className="grid md:grid-cols-2 gap-8">
+            <Card className="glassmorphic">
+                <CardHeader>
+                    <CardTitle>Ratings & Reviews</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {reviews.length === 0 ? (
+                        <p className="text-muted-foreground italic">No reviews yet. Be the first to leave one!</p>
+                    ) : (
+                        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                            {reviews.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((review, index) => (
+                                <div key={index} className="flex items-start gap-4 border-b border-border pb-4 last:border-b-0">
+                                    <Avatar>
+                                        <AvatarFallback>{getMemberInitials(review.memberId)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className='flex-1'>
+                                        <div className="flex items-center justify-between">
+                                            <p className='font-semibold'>{getMemberName(review.memberId)}</p>
+                                            <div className="flex items-center gap-1">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} className={cn("h-4 w-4", i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mb-2">{new Date(review.date).toLocaleDateString()}</p>
+                                        <p className="text-muted-foreground text-sm">{review.comment}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+             <Card className="glassmorphic">
+                <CardHeader>
+                    <CardTitle>Leave a Review</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleReviewSubmit} className="space-y-4">
+                         <div>
+                            <Label htmlFor="member-select">Select Member</Label>
+                             <Select
+                                value={newReview.memberId}
+                                onValueChange={(value) => setNewReview({ ...newReview, memberId: value })}
+                            >
+                                <SelectTrigger id="member-select" className="w-full mt-2">
+                                    <SelectValue placeholder="Select a member to review as..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {initialMembers.map(member => (
+                                        <SelectItem key={member.id} value={member.id.toString()}>{member.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label>Rating</Label>
+                            <div className="flex items-center gap-1 mt-2">
+                                {[...Array(5)].map((_, i) => (
+                                     <Button 
+                                        key={i} 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        onClick={() => setNewReview({ ...newReview, rating: i + 1 })}
+                                    >
+                                        <Star className={cn("h-6 w-6", i < newReview.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/50")} />
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                             <Label htmlFor="comment">Comment</Label>
+                            <Textarea
+                                id="comment"
+                                className="mt-2"
+                                placeholder="What did you think of the book?"
+                                value={newReview.comment}
+                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                            />
+                        </div>
+                        <Button type="submit" className="w-full">Submit Review</Button>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
       </main>
     </div>
   );

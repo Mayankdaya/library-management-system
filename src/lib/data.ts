@@ -15,6 +15,10 @@ export const initialBooks: Book[] = [
     genre: 'Fiction',
     status: 'Available',
     reservations: [],
+    reviews: [
+        { memberId: 2, rating: 5, comment: "An absolute classic. A must-read for everyone.", date: "2024-05-20T10:00:00Z" },
+        { memberId: 3, rating: 4, comment: "Powerful story and characters. It stays with you long after you finish.", date: "2024-06-15T14:30:00Z" }
+    ],
   },
   {
     id: 2,
@@ -27,6 +31,9 @@ export const initialBooks: Book[] = [
     checkoutDate: '2023-10-01',
     dueDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 10 days ago
     reservations: [3],
+    reviews: [
+        { memberId: 1, rating: 5, comment: "A chilling and thought-provoking book that is more relevant than ever.", date: "2024-04-01T18:00:00Z" }
+    ],
   },
   {
     id: 3,
@@ -36,6 +43,7 @@ export const initialBooks: Book[] = [
     genre: 'Classic',
     status: 'Available',
     reservations: [],
+    reviews: [],
   },
   {
     id: 4,
@@ -45,6 +53,7 @@ export const initialBooks: Book[] = [
     genre: 'Romance',
     status: 'Available',
     reservations: [],
+    reviews: [],
   },
   {
     id: 5,
@@ -57,6 +66,7 @@ export const initialBooks: Book[] = [
     checkoutDate: '2023-10-15',
     dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 14 days from now
     reservations: [],
+    reviews: [],
   },
   {
     id: 6,
@@ -66,6 +76,7 @@ export const initialBooks: Book[] = [
     genre: 'Sci-Fi',
     status: 'Available',
     reservations: [],
+    reviews: [],
   },
   {
     id: 7,
@@ -78,6 +89,7 @@ export const initialBooks: Book[] = [
     checkoutDate: '2024-07-01',
     dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 days ago
     reservations: [1, 2],
+    reviews: [],
   },
   {
     id: 8,
@@ -87,6 +99,7 @@ export const initialBooks: Book[] = [
     genre: 'Dystopian',
     status: 'Available',
     reservations: [],
+    reviews: [],
   },
   {
     id: 9,
@@ -96,6 +109,9 @@ export const initialBooks: Book[] = [
     genre: 'Fantasy',
     status: 'Available',
     reservations: [],
+    reviews: [
+        { memberId: 3, rating: 5, comment: "The pinnacle of fantasy literature. An epic in every sense of the word.", date: "2024-07-10T12:00:00Z" }
+    ],
   },
   {
     id: 10,
@@ -108,5 +124,6 @@ export const initialBooks: Book[] = [
     checkoutDate: '2024-07-10',
     dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     reservations: [],
+    reviews: [],
   }
 ];
