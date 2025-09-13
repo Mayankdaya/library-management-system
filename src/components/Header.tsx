@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BookMarked, Users, BookOpen, User, ShoppingCart, Star } from 'lucide-react';
+import { BookMarked, Users, BookOpen, User, Star } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
@@ -30,13 +30,10 @@ export default function Header() {
             <User className="h-6 w-6" />
             <span className="sr-only">My Account</span>
           </Button>
-          <Button variant="ghost" size="icon" className="relative">
-            <ShoppingCart className="h-6 w-6" />
-            <span className="sr-only">Checkout</span>
-            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">3</span>
-          </Button>
         </div>
       </div>
     </header>
   );
 }
+
+    
