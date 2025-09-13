@@ -1,129 +1,65 @@
 "use client";
 import React from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type SpotlightProps = {
-  gradientFirst?: string;
-  gradientSecond?: string;
-  gradientThird?: string;
-  translateY?: number;
-  width?: number;
-  height?: number;
-  smallWidth?: number;
-  duration?: number;
-  xOffset?: number;
+  className?: string;
+  fill?: string;
 };
 
 export const Spotlight = ({
-  gradientFirst = "radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(var(--primary), .08) 0, hsla(var(--accent), .04) 50%, transparent 80%)",
-  gradientSecond = "radial-gradient(50% 50% at 50% 50%, hsla(var(--primary), .06) 0, transparent 100%)",
-  gradientThird = "radial-gradient(50% 50% at 50% 50%, hsla(var(--accent), .04) 0, transparent 100%)",
-  translateY = -350,
-  width = 560,
-  height = 1380,
-  smallWidth = 240,
-  duration = 7,
-  xOffset = 100,
-}: SpotlightProps = {}) => {
-  const x = useMotionValue(0);
+  className,
+  fill,
+}: SpotlightProps) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  React.useEffect(() => {
-    const controls = animate(x, [0, xOffset, 0], {
-      duration,
-      repeat: Infinity,
-      repeatType: "reverse",
-      ease: "easeInOut",
-    });
+  let maskImage = useTransform(
+    [mouseX, mouseY],
+    ([newX, newY]) =>
+      `radial-gradient(500px at ${newX}px ${newY}px, white, transparent)`
+  );
 
-    return controls.stop;
-  }, [x, xOffset, duration]);
+  let style = {
+    maskImage: maskImage,
+    WebkitMaskImage: maskImage,
+  };
+
+  function handleMouseMove({
+    currentTarget,
+    clientX,
+    clientY,
+  }: React.MouseEvent<HTMLDivElement>) {
+    let { left, top } = currentTarget.getBoundingClientRect();
+    let newX = clientX - left;
+    let newY = clientY - top;
+
+    mouseX.set(newX);
+    mouseY.set(newY);
+  }
 
   return (
-    <motion.div
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
-      transition={{
-        duration: 1.5,
-      }}
-      className="pointer-events-none absolute inset-0 h-full w-full"
+    <div
+      onMouseMove={handleMouseMove}
+      className={cn(
+        "absolute inset-0 h-screen w-full opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-transparent",
+        className
+      )}
     >
       <motion.div
-        style={{
-          x,
-        }}
-        className="absolute top-0 left-0 w-screen h-screen z-40 pointer-events-none"
-      >
-        <div
+        className="absolute inset-[-20%] h-[140%] w-[140%] bg-transparent"
+        style={style}
+      />
+       {fill && (
+        <motion.div
+          className="absolute inset-0 h-full w-full bg-transparent"
           style={{
-            transform: `translateY(${translateY}px) rotate(-45deg)`,
-            background: gradientFirst,
-            width: `${width}px`,
-            height: `${height}px`,
+            maskImage: `radial-gradient(500px at 50% 50%, ${fill}, transparent)`,
+            WebkitMaskImage: `radial-gradient(500px at 50% 50%, ${fill}, transparent)`,
           }}
-          className={`absolute top-0 left-0`}
         />
-
-        <div
-          style={{
-            transform: "rotate(-45deg) translate(5%, -50%)",
-            background: gradientSecond,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 left-0 origin-top-left`}
-        />
-
-        <div
-          style={{
-            transform: "rotate(-45deg) translate(-180%, -70%)",
-            background: gradientThird,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 left-0 origin-top-left`}
-        />
-      </motion.div>
-
-      <motion.div
-        style={{
-          x: useTransform(x, (value) => -value),
-        }}
-        className="absolute top-0 right-0 w-screen h-screen z-40 pointer-events-none"
-      >
-        <div
-          style={{
-            transform: `translateY(${translateY}px) rotate(45deg)`,
-            background: gradientFirst,
-            width: `${width}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 right-0`}
-        />
-
-        <div
-          style={{
-            transform: "rotate(45deg) translate(-5%, -50%)",
-            background: gradientSecond,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 right-0 origin-top-right`}
-        />
-
-        <div
-          style={{
-            transform: "rotate(45deg) translate(180%, -70%)",
-            background: gradientThird,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 right-0 origin-top-right`}
-        />
-      </motion.div>
-    </motion.div>
+      )}
+    </div>
   );
 };
