@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import { Spotlight } from '@/components/ui/spotlight';
@@ -18,6 +19,11 @@ import {
 } from "@/components/ui/carousel";
 import { initialBooks } from '@/lib/data';
 import bookCovers from '@/lib/placeholder-images.json';
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
 
 export default function PremiumHomePage() {
   const features = [
@@ -58,22 +64,43 @@ export default function PremiumHomePage() {
           fill="hsl(var(--primary))"
         />
         <div className="p-4 max-w-7xl mx-auto relative z-10 w-full text-center">
-          <h1 className="text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50 font-headline">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50 font-headline"
+          >
             Verdant Library <br /> Your Gateway to Knowledge.
-          </h1>
-          <p className="mt-4 font-normal text-base text-neutral-300 max-w-2xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-4 font-normal text-base text-neutral-300 max-w-2xl mx-auto"
+          >
             Explore a universe of stories, knowledge, and adventure. Your next chapter awaits in our extensive collection.
-          </p>
-          <div className="mt-8 flex justify-center">
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-8 flex justify-center"
+          >
             <Link href="/catalog">
               <Button size="lg" className="bg-primary/80 hover:bg-primary text-primary-foreground">
                 Explore the Collection
               </Button>
             </Link>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="mt-24 max-w-7xl mx-auto relative z-10 w-full p-4">
+        <motion.div 
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-24 max-w-7xl mx-auto relative z-10 w-full p-4"
+        >
             <div className="glassmorphic p-8 md:p-12">
                 <ul className="space-y-4">
                 {features.map((feature, index) => (
@@ -87,9 +114,15 @@ export default function PremiumHomePage() {
                     Start your journey today—unlock endless possibilities with Verdant Library.
                 </p>
             </div>
-        </div>
+        </motion.div>
 
-        <div className="mt-24 max-w-7xl mx-auto z-10 w-full p-4">
+        <motion.div 
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-24 max-w-7xl mx-auto z-10 w-full p-4"
+        >
           <section className="glassmorphic p-8 md:p-12">
             <h2 className="text-3xl font-bold font-headline mb-8 text-center">New Arrivals</h2>
             <Carousel opts={{ align: "start", loop: true }} className="w-full">
@@ -98,14 +131,22 @@ export default function PremiumHomePage() {
                   <CarouselItem key={book.id} className="md:basis-1/3 lg:basis-1/4">
                     <Card className="bg-transparent border-none shadow-none">
                       <CardContent className="flex flex-col items-center justify-center p-0">
-                        <Image 
-                          src={bookCovers.bookCovers[index].src} 
-                          alt={book.title} 
-                          width={bookCovers.bookCovers[index].width}
-                          height={bookCovers.bookCovers[index].height}
-                          data-ai-hint={bookCovers.bookCovers[index].hint}
-                          className="rounded-lg shadow-2xl h-64 w-auto object-cover" 
-                        />
+                        <motion.div
+                          whileHover={{ y: -8, scale: 1.05 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          animate={{
+                            y: [0, -5, 0],
+                          }}
+                        >
+                          <Image 
+                            src={bookCovers.bookCovers[index].src} 
+                            alt={book.title} 
+                            width={bookCovers.bookCovers[index].width}
+                            height={bookCovers.bookCovers[index].height}
+                            data-ai-hint={bookCovers.bookCovers[index].hint}
+                            className="rounded-lg shadow-2xl h-64 w-auto object-cover" 
+                          />
+                        </motion.div>
                         <h3 className="font-semibold mt-4 text-center">{book.title}</h3>
                         <p className="text-sm text-muted-foreground text-center">{book.author}</p>
                       </CardContent>
@@ -117,9 +158,15 @@ export default function PremiumHomePage() {
               <CarouselNext className="right-[-1rem] md:right-[-2rem]" />
             </Carousel>
           </section>
-        </div>
+        </motion.div>
         
-        <div className="mt-24 max-w-7xl mx-auto z-10 w-full p-4">
+        <motion.div 
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-24 max-w-7xl mx-auto z-10 w-full p-4"
+        >
           <section className="glassmorphic p-8 md:p-12">
             <h2 className="text-3xl font-bold font-headline mb-8 text-center">Popular Titles</h2>
             <Carousel opts={{ align: "start", loop: true }} className="w-full">
@@ -128,14 +175,22 @@ export default function PremiumHomePage() {
                   <CarouselItem key={book.id} className="md:basis-1/3 lg:basis-1/4">
                     <Card className="bg-transparent border-none shadow-none">
                       <CardContent className="flex flex-col items-center justify-center p-0">
-                        <Image 
-                          src={bookCovers.bookCovers[index + 5].src} 
-                          alt={book.title}
-                          width={bookCovers.bookCovers[index + 5].width}
-                          height={bookCovers.bookCovers[index + 5].height}
-                          data-ai-hint={bookCovers.bookCovers[index + 5].hint}
-                          className="rounded-lg shadow-2xl h-64 w-auto object-cover" 
-                        />
+                         <motion.div
+                          whileHover={{ y: -8, scale: 1.05 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                           animate={{
+                            y: [0, -5, 0],
+                          }}
+                        >
+                          <Image 
+                            src={bookCovers.bookCovers[index + 5].src} 
+                            alt={book.title}
+                            width={bookCovers.bookCovers[index + 5].width}
+                            height={bookCovers.bookCovers[index + 5].height}
+                            data-ai-hint={bookCovers.bookCovers[index + 5].hint}
+                            className="rounded-lg shadow-2xl h-64 w-auto object-cover" 
+                          />
+                        </motion.div>
                         <h3 className="font-semibold mt-4 text-center">{book.title}</h3>
                         <p className="text-sm text-muted-foreground text-center">{book.author}</p>
                       </CardContent>
@@ -147,9 +202,15 @@ export default function PremiumHomePage() {
               <CarouselNext className="right-[-1rem] md:right-[-2rem]" />
             </Carousel>
           </section>
-        </div>
+        </motion.div>
 
-        <div className="mt-24 max-w-5xl mx-auto z-10 w-full p-4">
+        <motion.div 
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-24 max-w-5xl mx-auto z-10 w-full p-4"
+        >
           <h2 className="text-3xl font-bold font-headline mb-8 text-center">What Our Members Are Saying</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {testimonials.map((testimonial, index) => (
@@ -162,9 +223,15 @@ export default function PremiumHomePage() {
                     </Card>
                 ))}
             </div>
-        </div>
+        </motion.div>
 
-        <div className="mt-24 max-w-4xl mx-auto z-10 w-full p-4">
+        <motion.div 
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-24 max-w-4xl mx-auto z-10 w-full p-4"
+        >
           <div className="glassmorphic p-8 md:p-12 text-center">
             <h2 className="text-3xl font-bold font-headline mb-4">Ready to Dive In?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -177,7 +244,7 @@ export default function PremiumHomePage() {
               </Button>
             </Link>
           </div>
-        </div>
+        </motion.div>
       </main>
 
       <footer className="w-full z-10 p-8 glassmorphic mt-12">
@@ -220,3 +287,5 @@ export default function PremiumHomePage() {
     </div>
   );
 }
+
+    
