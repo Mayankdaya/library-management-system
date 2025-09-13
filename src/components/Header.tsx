@@ -4,9 +4,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Settings, LogOut, LogIn } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { Settings } from 'lucide-react';
 import React from 'react';
 
 
@@ -34,14 +32,7 @@ const MessageSquareQuoteIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const HeaderContent = () => {
-  const { user, logout } = useAuth();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await logout();
-    router.push('/login');
-  };
+export default function Header() {
 
   return (
     <header className={cn("glassmorphic sticky top-0 left-0 right-0 z-30")}>
@@ -50,8 +41,7 @@ const HeaderContent = () => {
           <BookMarkedIcon className="h-8 w-8 text-foreground" />
           <h1 className="text-3xl font-headline font-bold">Verdant Library</h1>
         </Link>
-        {user && (
-          <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6">
             <Link href="/catalog" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
               <BookOpenIcon className="h-5 w-5" />
               <span>Full Catalog</span>
@@ -64,40 +54,16 @@ const HeaderContent = () => {
               <MessageSquareQuoteIcon className="h-5 w-5" />
               <span>Community</span>
             </Link>
-          </nav>
-        )}
+        </nav>
         <div className="flex items-center gap-2">
-          {user ? (
-            <>
-              <Button variant="ghost" size="icon" asChild>
-                <Link href="/settings">
-                  <Settings className="h-6 w-6" />
-                  <span className="sr-only">Settings</span>
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="h-6 w-6" />
-                <span className="sr-only">Logout</span>
-              </Button>
-            </>
-          ) : (
-             <Button asChild>
-                <Link href="/login">
-                  <LogIn className="mr-2 h-5 w-5" />
-                  Login
-                </Link>
-              </Button>
-          )}
+            <Button variant="ghost" size="icon" asChild>
+            <Link href="/settings">
+                <Settings className="h-6 w-6" />
+                <span className="sr-only">Settings</span>
+            </Link>
+            </Button>
         </div>
       </div>
     </header>
   );
-}
-
-
-// A wrapper component is needed because useAuth can only be used in a client component
-export default function Header() {
-    const { loading } = useAuth();
-    if (loading) return null;
-    return <HeaderContent />
 }
