@@ -7,8 +7,8 @@ import { Button } from './ui/button';
 import { Settings, ShoppingCart, LogIn, UserPlus, LogOut } from 'lucide-react';
 import React from 'react';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
-import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { UserButton, useUser } from '@clerk/nextjs';
 
 
 export const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -37,13 +37,8 @@ const MessageSquareQuoteIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function Header() {
   const { checkoutItems } = useCheckout();
-  const { user, signOut } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/login');
-  };
 
   return (
     <header className={cn("glassmorphic sticky top-0 left-0 right-0 z-30")}>
@@ -66,7 +61,7 @@ export default function Header() {
               <span>Community</span>
             </Link>
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
             {user ? (
               <>
                 <Button variant="ghost" size="icon" asChild>
@@ -86,21 +81,18 @@ export default function Header() {
                       <span className="sr-only">Settings</span>
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
+                <UserButton afterSignOutUrl="/" />
               </>
             ) : (
               <>
                 <Button asChild variant="outline" size="sm">
-                    <Link href="/login">
+                    <Link href="/sign-in">
                         <LogIn className="mr-2 h-4 w-4" />
                         Login
                     </Link>
                 </Button>
                  <Button asChild size="sm">
-                    <Link href="/signup">
+                    <Link href="/sign-up">
                         <UserPlus className="mr-2 h-4 w-4" />
                         Sign Up
                     </Link>

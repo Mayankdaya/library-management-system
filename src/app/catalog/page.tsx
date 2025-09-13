@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -9,12 +10,12 @@ import SuggestedReads from '@/components/SuggestedReads';
 import Dashboard from '@/components/Dashboard';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 
 export default function CatalogPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { isSignedIn, isLoaded } = useUser();
   const [books, setBooks] = useState<Book[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,13 +23,13 @@ export default function CatalogPage() {
   const { clearCheckout } = useCheckout();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in');
     }
-  }, [user, loading, router]);
+  }, [isSignedIn, isLoaded, router]);
 
   useEffect(() => {
-    if (user) {
+    if (isSignedIn) {
       const fetchBooks = async () => {
         const { data, error } = await supabase.from('books').select('*');
         if (data) setBooks(data);
@@ -40,7 +41,7 @@ export default function CatalogPage() {
       fetchBooks();
       fetchMembers();
     }
-  }, [user]);
+  }, [isSignedIn]);
 
   const handleAddBook = async (newBook: Omit<Book, 'id' | 'status'>) => {
     const { data, error } = await supabase.from('books').insert([{ ...newBook, status: 'Available', reservations: [] }]).select();
@@ -138,7 +139,7 @@ export default function CatalogPage() {
     return books.filter(book => book.status === 'Checked Out').map(({ title, author, genre }) => ({ title, author, genre }));
   }, [books]);
   
-  if (loading || !user) {
+  if (!isLoaded || !isSignedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-transparent">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />

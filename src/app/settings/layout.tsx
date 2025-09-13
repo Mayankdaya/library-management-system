@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -19,7 +20,7 @@ import Link from "next/link"
 
 const menuItems = [
     { href: "/settings", label: "General", icon: SettingsIcon },
-    { href: "/settings/profile", label: "Profile", icon: User },
+    { href: "/user-profile", label: "Profile", icon: User },
     { href: "/settings/appearance", label: "Appearance", icon: Brush },
     { href: "/settings/notifications", label: "Notifications", icon: Bell },
 ]
@@ -46,7 +47,7 @@ export default function SettingsLayout({
                     <SidebarMenu>
                         {menuItems.map((item) => (
                         <SidebarMenuItem key={item.label}>
-                            <SidebarMenuButton asChild isActive={pathname === item.href}>
+                            <SidebarMenuButton asChild isActive={pathname.startsWith(item.href)}>
                                 <Link href={item.href}>
                                 <item.icon />
                                 <span>{item.label}</span>
