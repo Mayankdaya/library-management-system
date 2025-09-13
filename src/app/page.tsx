@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import { Spotlight } from '@/components/ui/spotlight';
 import { cn } from '@/lib/utils';
-import { CheckCircle, BookOpen, User, Star, MessageSquareQuote } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -24,6 +24,12 @@ const sectionVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
+
+const BookOpenIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+    </svg>
+);
 
 export default function PremiumHomePage() {
   const features = [
@@ -124,7 +130,7 @@ export default function PremiumHomePage() {
           className="mt-24 max-w-7xl mx-auto z-10 w-full p-4"
         >
           <section className="glassmorphic p-8 md:p-12">
-            <h2 className="text-3xl font-bold font-headline mb-8 text-center">New Arrivals</h2>
+            <h2 className="text-3xl font-bold font-headline mb-8 text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">New Arrivals</h2>
             <Carousel opts={{ align: "start", loop: true }} className="w-full">
               <CarouselContent>
                 {newArrivals.map((book, index) => (
@@ -134,15 +140,8 @@ export default function PremiumHomePage() {
                         <motion.div
                           whileHover={{ y: -8, scale: 1.05 }}
                           transition={{ type: "spring", stiffness: 300 }}
-                          animate={{
-                            y: [0, -5, 0],
-                            transition: {
-                              duration: 1.5,
-                              repeat: Infinity,
-                              repeatType: 'reverse',
-                              ease: 'easeInOut',
-                              delay: index * 0.2
-                            }
+                           style={{
+                            animation: `float 3s ease-in-out infinite ${index * 0.2}s`,
                           }}
                         >
                           <Image 
@@ -175,7 +174,7 @@ export default function PremiumHomePage() {
           className="mt-24 max-w-7xl mx-auto z-10 w-full p-4"
         >
           <section className="glassmorphic p-8 md:p-12">
-            <h2 className="text-3xl font-bold font-headline mb-8 text-center">Popular Titles</h2>
+            <h2 className="text-3xl font-bold font-headline mb-8 text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">Popular Titles</h2>
             <Carousel opts={{ align: "start", loop: true }} className="w-full">
               <CarouselContent>
                 {popularTitles.map((book, index) => (
@@ -185,15 +184,8 @@ export default function PremiumHomePage() {
                          <motion.div
                           whileHover={{ y: -8, scale: 1.05 }}
                           transition={{ type: "spring", stiffness: 300 }}
-                          animate={{
-                            y: [0, -5, 0],
-                            transition: {
-                              duration: 1.5,
-                              repeat: Infinity,
-                              repeatType: 'reverse',
-                              ease: 'easeInOut',
-                              delay: (index + 5) * 0.2
-                            }
+                           style={{
+                            animation: `float 3s ease-in-out infinite ${(index + 5) * 0.2}s`,
                           }}
                         >
                           <Image 
@@ -225,7 +217,7 @@ export default function PremiumHomePage() {
           viewport={{ once: true, amount: 0.2 }}
           className="mt-24 max-w-5xl mx-auto z-10 w-full p-4"
         >
-          <h2 className="text-3xl font-bold font-headline mb-8 text-center">What Our Members Are Saying</h2>
+          <h2 className="text-3xl font-bold font-headline mb-8 text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">What Our Members Are Saying</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {testimonials.map((testimonial, index) => (
                     <Card key={index} className="glassmorphic">
@@ -247,13 +239,13 @@ export default function PremiumHomePage() {
           className="mt-24 max-w-4xl mx-auto z-10 w-full p-4"
         >
           <div className="glassmorphic p-8 md:p-12 text-center">
-            <h2 className="text-3xl font-bold font-headline mb-4">Ready to Dive In?</h2>
+            <h2 className="text-3xl font-bold font-headline mb-4 bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">Ready to Dive In?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
               Join thousands of readers and start your next literary adventure today. Our collection is waiting for you.
             </p>
             <Link href="/catalog">
               <Button size="lg" className="bg-primary/80 hover:bg-primary text-primary-foreground text-lg">
-                <BookOpen className="mr-2 h-5 w-5" />
+                <BookOpenIcon className="mr-2 h-5 w-5" />
                 Browse the Full Catalog
               </Button>
             </Link>

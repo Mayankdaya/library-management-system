@@ -1,33 +1,62 @@
 import Link from 'next/link';
-import { BookMarked, Users, BookOpen, User, Star, MessageSquareQuote } from 'lucide-react';
-import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
+
+const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+    </svg>
+);
+
+const BookOpenIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+    </svg>
+);
+
+const UsersIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+);
+
+const MessageSquareQuoteIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M8 12h.01"></path><path d="M12 12h.01"></path><path d="M16 12h.01"></path>
+    </svg>
+);
+
+const UserIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+    </svg>
+);
 
 export default function Header() {
   return (
     <header className={cn("glassmorphic sticky top-0 left-0 right-0 z-30")}>
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <BookMarked className="h-8 w-8 text-foreground" />
+          <BookMarkedIcon className="h-8 w-8 text-foreground" />
           <h1 className="text-3xl font-headline font-bold">Verdant Library</h1>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/catalog" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-            <BookOpen className="h-5 w-5" />
+            <BookOpenIcon className="h-5 w-5" />
             <span>Full Catalog</span>
           </Link>
           <Link href="/members" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-            <Users className="h-5 w-5" />
+            <UsersIcon className="h-5 w-5" />
             <span>Members</span>
           </Link>
            <Link href="#" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-            <MessageSquareQuote className="h-5 w-5" />
+            <MessageSquareQuoteIcon className="h-5 w-5" />
             <span>Community</span>
           </Link>
         </nav>
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon">
-            <User className="h-6 w-6" />
+            <UserIcon className="h-6 w-6" />
             <span className="sr-only">My Account</span>
           </Button>
         </div>

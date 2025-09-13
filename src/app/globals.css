@@ -78,3 +78,9 @@ body {
     @apply bg-card/50 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg;
   }
 }
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
