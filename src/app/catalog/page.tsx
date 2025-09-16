@@ -24,7 +24,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/sign-in');
+      router.push('/login');
     }
   }, [user, loading, router]);
 

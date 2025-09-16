@@ -93,13 +93,13 @@ export default function Header() {
             ) : (
               <>
                 <Button asChild variant="outline" size="sm">
-                    <Link href="/sign-in">
+                    <Link href="/login">
                         <LogIn className="mr-2 h-4 w-4" />
                         Login
                     </Link>
                 </Button>
                  <Button asChild size="sm">
-                    <Link href="/sign-up">
+                    <Link href="/signup">
                         <UserPlus className="mr-2 h-4 w-4" />
                         Sign Up
                     </Link>
