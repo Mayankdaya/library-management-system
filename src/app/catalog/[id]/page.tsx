@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
 import { supabase } from '@/lib/supabase';
+import { generateSummary } from '@/ai/flows/generate-summary-flow';
 
 export default function BookDetailPage() {
   const router = useRouter();
@@ -47,14 +48,17 @@ export default function BookDetailPage() {
           .single();
 
         if (data) {
-          setBook(data);
-          const initialReviews = data.reviews || [];
+          const bookData = data as any; // Cast to any to handle Supabase return type
+          setBook(bookData);
+          const initialReviews = bookData.reviews || [];
           setReviews(initialReviews);
           if (initialReviews.length > 0) {
             const totalRating = initialReviews.reduce((acc, review) => acc + review.rating, 0);
             setAvgRating(totalRating / initialReviews.length);
           }
         } else {
+          console.error("Error fetching book:", error);
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not load book details.' });
           router.push('/catalog');
         }
       };
@@ -67,14 +71,25 @@ export default function BookDetailPage() {
       fetchBook();
       fetchMembers();
     }
-  }, [id, router]);
+  }, [id, router, toast]);
 
   const handleGenerateSummary = async () => {
     if (!book) return;
     setIsSummaryLoading(true);
-    // Genkit flow removed, so we'll just have a placeholder summary
-    setSummary(`This is a placeholder summary for ${book.title}.`);
-    setIsSummaryLoading(false);
+    try {
+        const generated = await generateSummary({ title: book.title, author: book.author });
+        setSummary(generated);
+    } catch (error) {
+        console.error(error);
+        toast({
+            variant: "destructive",
+            title: "AI Summary Failed",
+            description: "Could not generate a summary for this book. Please try again."
+        });
+        setSummary("");
+    } finally {
+        setIsSummaryLoading(false);
+    }
   };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
@@ -99,7 +114,8 @@ export default function BookDetailPage() {
     const { data: newReviewData, error } = await supabase.from('reviews').insert(reviewToInsert).select('*, members(*)').single();
 
     if (newReviewData) {
-      const updatedReviews = [...reviews, newReviewData];
+      const newReviewWithMember = newReviewData as any;
+      const updatedReviews = [...reviews, newReviewWithMember];
       setReviews(updatedReviews);
 
       const totalRating = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
@@ -143,6 +159,7 @@ export default function BookDetailPage() {
   };
   
   const getMemberInitials = (member: Member) => {
+      if (!member || !member.name) return 'U';
       const name = member.name;
       if (name === 'N/A' || name === 'Unknown Member') return 'U';
       return name.split(' ').map(n => n[0]).join('');
@@ -269,14 +286,14 @@ export default function BookDetailPage() {
                         <p className="text-muted-foreground italic">No reviews yet. Be the first to leave one!</p>
                     ) : (
                         <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                            {reviews.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((review, index) => (
-                                <div key={index} className="flex items-start gap-4 border-b border-border pb-4 last:border-b-0">
+                            {reviews.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((review) => (
+                                <div key={review.id} className="flex items-start gap-4 border-b border-border pb-4 last:border-b-0">
                                     <Avatar>
                                         <AvatarFallback>{getMemberInitials(review.members)}</AvatarFallback>
                                     </Avatar>
                                     <div className='flex-1'>
                                         <div className="flex items-center justify-between">
-                                            <p className='font-semibold'>{review.members.name}</p>
+                                            <p className='font-semibold'>{review.members?.name || 'Anonymous'}</p>
                                             <div className="flex items-center gap-1">
                                                 {[...Array(5)].map((_, i) => (
                                                     <Star key={i} className={cn("h-4 w-4", i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
