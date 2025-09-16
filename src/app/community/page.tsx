@@ -67,6 +67,7 @@ export default function CommunityPage() {
             },
             rsvps: ['1', '3'],
             capacity: 25,
+            dialogOpen: false,
         },
         {
             id: 2,
@@ -81,6 +82,7 @@ export default function CommunityPage() {
             },
             rsvps: ['2'],
             capacity: 15,
+            dialogOpen: false,
         },
     ]);
 
@@ -148,6 +150,7 @@ export default function CommunityPage() {
             newEvents[eventIndex] = {
                 ...event,
                 rsvps: [...event.rsvps, selectedMemberId],
+                dialogOpen: false,
             };
             
             const member = members.find(m => m.id === selectedMemberId);
@@ -157,13 +160,17 @@ export default function CommunityPage() {
             });
             
             setSelectedMemberId(null);
-            document.dispatchEvent(new Event(`close-dialog-${eventId}`));
-
-
             return newEvents;
         });
     };
     
+    const toggleDialog = (eventId: number, open: boolean) => {
+        setEvents(prev => prev.map(e => e.id === eventId ? { ...e, dialogOpen: open } : e));
+        if (!open) {
+            setSelectedMemberId(null);
+        }
+    }
+
     const getMemberName = (memberId: string) => members.find(m => m.id === memberId)?.name || 'Unknown Member';
     const getMemberInitials = (name: string) => {
         if (!name || name === 'N/A' || name === 'Unknown Member') return 'U';
@@ -189,12 +196,12 @@ export default function CommunityPage() {
                     <section>
                         <h2 className="text-3xl font-bold font-headline mb-8 text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-primary/60">Upcoming Events</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {events.map((event, index) => {
+                            {events.map((event) => {
                                 const spotsLeft = event.capacity - event.rsvps.length;
                                 const isFull = spotsLeft <= 0;
 
                                 return (
-                                <Card key={index} className="glassmorphic overflow-hidden flex flex-col">
+                                <Card key={event.id} className="glassmorphic overflow-hidden flex flex-col">
                                      <Image 
                                         src={event.image.src} 
                                         alt={event.title}
@@ -249,7 +256,7 @@ export default function CommunityPage() {
                                             <Progress value={(event.rsvps.length / event.capacity) * 100} className="h-2" />
                                         </div>
 
-                                        <Dialog onOpenChange={(open) => { if (!open) setSelectedMemberId(null); }}>
+                                        <Dialog open={event.dialogOpen} onOpenChange={(open) => toggleDialog(event.id, open)}>
                                             <DialogTrigger asChild>
                                                 <Button variant="outline" disabled={isFull}>
                                                     {isFull ? 'Event Full' : 'RSVP Now'} <ArrowRight className="ml-2 h-4 w-4" />
@@ -362,5 +369,3 @@ export default function CommunityPage() {
         </TooltipProvider>
     );
 }
-
-    
