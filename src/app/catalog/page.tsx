@@ -31,7 +31,7 @@ export default function CatalogPage() {
   useEffect(() => {
     if (user) {
       const fetchBooks = async () => {
-        const { data, error } = await supabase.from('books').select('*');
+        const { data, error } = await supabase.from('books').select('*, reviews(*)');
         if (data) setBooks(data);
       };
       const fetchMembers = async () => {
@@ -43,10 +43,10 @@ export default function CatalogPage() {
     }
   }, [user]);
 
-  const handleAddBook = async (newBook: Omit<Book, 'id' | 'status'>) => {
-    const { data, error } = await supabase.from('books').insert([{ ...newBook, status: 'Available', reservations: [] }]).select();
+  const handleAddBook = async (newBook: Omit<Book, 'id' | 'status' | 'reservations'>) => {
+    const { data, error } = await supabase.from('books').insert([{ ...newBook, status: 'Available', reservations: [] }]).select('*, reviews(*)').single();
     if (data) {
-      setBooks(prevBooks => [...prevBooks, data[0]]);
+      setBooks(prevBooks => [...prevBooks, data]);
     }
   };
 
@@ -61,7 +61,7 @@ export default function CatalogPage() {
     );
     await Promise.all(updates);
 
-    const { data: updatedBooks } = await supabase.from('books').select('*');
+    const { data: updatedBooks } = await supabase.from('books').select('*, reviews(*)');
     if (updatedBooks) setBooks(updatedBooks);
     
     clearCheckout();
@@ -94,7 +94,7 @@ export default function CatalogPage() {
     const { data, error } = await supabase.from('books').update(updateData).eq('id', bookId).select();
     
     if (data) {
-       const { data: updatedBooks } = await supabase.from('books').select('*');
+       const { data: updatedBooks } = await supabase.from('books').select('*, reviews(*)');
        if (updatedBooks) setBooks(updatedBooks);
     }
   };
@@ -107,7 +107,7 @@ export default function CatalogPage() {
     const { data, error } = await supabase.from('books').update({ reservations: newReservations }).eq('id', bookId).select();
     
     if (data) {
-       const { data: updatedBooks } = await supabase.from('books').select('*');
+       const { data: updatedBooks } = await supabase.from('books').select('*, reviews(*)');
        if (updatedBooks) setBooks(updatedBooks);
     }
   }

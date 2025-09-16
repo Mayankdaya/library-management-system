@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -47,7 +48,7 @@ interface BookTableProps {
   members: Member[];
   onSearch: (term: string) => void;
   onFilter: (status: string) => void;
-  onAddBook: (book: Omit<Book, 'id' | 'status'>) => void;
+  onAddBook: (book: Omit<Book, 'id' | 'status' | 'reservations'>) => void;
   onCheckOut: (bookIds: number[], memberId: number, dueDate: string) => void;
   onReturnBook: (bookId: number) => void;
   onReserveBook: (bookId: number, memberId: number) => void;
