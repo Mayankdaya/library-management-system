@@ -38,16 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signOut,
   };
-  
-  if (loading) {
-    return (
-       <div className="min-h-screen flex items-center justify-center bg-transparent">
-        <Loader2 className="h-16 w-16 animate-spin text-primary" />
-      </div>
-    )
-  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center bg-transparent">
+          <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        </div>
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
