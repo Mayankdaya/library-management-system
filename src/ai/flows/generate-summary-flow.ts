@@ -19,6 +19,7 @@ export type GenerateSummaryInput = z.infer<typeof GenerateSummaryInputSchema>;
 const prompt = ai.definePrompt({
   name: 'generateSummaryPrompt',
   input: { schema: GenerateSummaryInputSchema },
+  output: { schema: z.string() },
   prompt: `Generate a short, intriguing, one-paragraph summary for the book "{{title}}" by {{author}}. The summary should be suitable for a library catalog page to entice readers.`,
 });
 
@@ -29,10 +30,8 @@ const generateSummaryFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
-    const { text } = await ai.generate({
-        prompt: await prompt.render(input),
-    });
-    return text;
+    const { output } = await prompt(input);
+    return output || "";
   }
 );
 
