@@ -44,9 +44,16 @@ export default function CatalogPage() {
   }, [user]);
 
   const handleAddBook = async (newBook: Omit<Book, 'id' | 'status' | 'reservations'>) => {
-    const { data, error } = await supabase.from('books').insert([{ ...newBook, status: 'Available', reservations: [] }]).select('*, reviews(*)').single();
+    const { data, error } = await supabase
+        .from('books')
+        .insert([{ ...newBook, status: 'Available', reservations: [] }])
+        .select('*, reviews(*)')
+        .single();
+    
     if (data) {
-      setBooks(prevBooks => [...prevBooks, data]);
+        setBooks(prevBooks => [...prevBooks, data]);
+    } else {
+        console.error("Error adding book:", error);
     }
   };
 
