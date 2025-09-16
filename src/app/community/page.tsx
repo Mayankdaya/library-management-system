@@ -122,42 +122,44 @@ export default function CommunityPage() {
             });
             return;
         }
+        
+        const event = events.find(e => e.id === eventId);
+        if (!event) return;
+
+        if (event.rsvps.includes(selectedMemberId)) {
+            toast({
+                variant: 'destructive',
+                title: 'Already Registered',
+                description: 'This member has already RSVP\'d for this event.',
+            });
+            return;
+        }
+
+        if (event.rsvps.length >= event.capacity) {
+            toast({
+                variant: 'destructive',
+                title: 'Event Full',
+                description: 'This event has reached its maximum capacity.',
+            });
+            return;
+        }
+        
+        const member = members.find(m => m.id === selectedMemberId);
+        toast({
+            title: 'RSVP Successful!',
+            description: `${member?.name} is now registered for "${event.title}".`,
+        });
 
         setEvents(prevEvents => {
             const newEvents = [...prevEvents];
             const eventIndex = newEvents.findIndex(e => e.id === eventId);
             if (eventIndex === -1) return prevEvents;
 
-            const event = newEvents[eventIndex];
-            if (event.rsvps.includes(selectedMemberId)) {
-                 toast({
-                    variant: 'destructive',
-                    title: 'Already Registered',
-                    description: 'This member has already RSVP\'d for this event.',
-                });
-                return prevEvents;
-            }
-            
-            if (event.rsvps.length >= event.capacity) {
-                toast({
-                    variant: 'destructive',
-                    title: 'Event Full',
-                    description: 'This event has reached its maximum capacity.',
-                });
-                return prevEvents;
-            }
-
             newEvents[eventIndex] = {
-                ...event,
-                rsvps: [...event.rsvps, selectedMemberId],
+                ...newEvents[eventIndex],
+                rsvps: [...newEvents[eventIndex].rsvps, selectedMemberId],
                 dialogOpen: false,
             };
-            
-            const member = members.find(m => m.id === selectedMemberId);
-            toast({
-                title: 'RSVP Successful!',
-                description: `${member?.name} is now registered for "${event.title}".`,
-            });
             
             setSelectedMemberId(null);
             return newEvents;
@@ -369,3 +371,5 @@ export default function CommunityPage() {
         </TooltipProvider>
     );
 }
+
+    
