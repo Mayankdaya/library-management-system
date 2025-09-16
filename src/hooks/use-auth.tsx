@@ -1,11 +1,9 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { auth } from '@/lib/firebase';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
-import { Loader2 } from 'lucide-react';
 
 interface AuthContextType {
   user: User | null;
@@ -30,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await auth.signOut();
-    setUser(null);
   };
 
   const value = {
@@ -39,15 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
   };
 
+  // The provider should not render a loading screen itself.
+  // It should only provide the context value.
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-transparent">
-          <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 }
