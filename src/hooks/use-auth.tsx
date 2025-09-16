@@ -1,14 +1,16 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { auth } from '@/lib/firebase';
 import type { User } from 'firebase/auth';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, updateProfile } from 'firebase/auth';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  updateUserProfile: (data: { displayName?: string; photoURL?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,14 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await auth.signOut();
   };
 
+  const updateUserProfile = async (data: { displayName?: string; photoURL?: string }) => {
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, data);
+      // Manually update the user state to reflect changes immediately
+      setUser(auth.currentUser ? { ...auth.currentUser } : null);
+    } else {
+      throw new Error("No user is currently signed in.");
+    }
+  };
+
   const value = {
     user,
     loading,
     signOut,
+    updateUserProfile,
   };
 
-  // The provider should not render a loading screen itself.
-  // It should only provide the context value.
   return (
     <AuthContext.Provider value={value}>
       {children}
