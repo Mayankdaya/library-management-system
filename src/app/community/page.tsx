@@ -165,7 +165,10 @@ export default function CommunityPage() {
     };
     
     const getMemberName = (memberId: string) => members.find(m => m.id === memberId)?.name || 'Unknown Member';
-    const getMemberInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
+    const getMemberInitials = (name: string) => {
+        if (!name || name === 'N/A' || name === 'Unknown Member') return 'U';
+        return name.split(' ').map(n => n[0]).join('');
+    }
 
     return (
         <TooltipProvider>
@@ -359,3 +362,5 @@ export default function CommunityPage() {
         </TooltipProvider>
     );
 }
+
+    
