@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -33,7 +34,8 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import type { Member } from '@/types';
 
 
@@ -42,8 +44,11 @@ export default function CommunityPage() {
     const [members, setMembers] = useState<Member[]>([]);
     useEffect(() => {
         const fetchMembers = async () => {
-            const { data } = await supabase.from('members').select('*');
-            if (data) setMembers(data);
+            const membersCollection = collection(db, 'members');
+            const snapshot = await getDocs(membersCollection);
+            if (!snapshot.empty) {
+              setMembers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member)));
+            }
         };
         fetchMembers();
     }, []);
@@ -60,7 +65,7 @@ export default function CommunityPage() {
                 "height": 400,
                 "hint": "author speaking"
             },
-            rsvps: [1, 3],
+            rsvps: ['1', '3'],
             capacity: 25,
         },
         {
@@ -74,7 +79,7 @@ export default function CommunityPage() {
                 "height": 400,
                 "hint": "futuristic city"
             },
-            rsvps: [2],
+            rsvps: ['2'],
             capacity: 15,
         },
     ]);
@@ -116,15 +121,13 @@ export default function CommunityPage() {
             return;
         }
 
-        const memberId = parseInt(selectedMemberId, 10);
-
         setEvents(prevEvents => {
             const newEvents = [...prevEvents];
             const eventIndex = newEvents.findIndex(e => e.id === eventId);
             if (eventIndex === -1) return prevEvents;
 
             const event = newEvents[eventIndex];
-            if (event.rsvps.includes(memberId)) {
+            if (event.rsvps.includes(selectedMemberId)) {
                  toast({
                     variant: 'destructive',
                     title: 'Already Registered',
@@ -144,10 +147,10 @@ export default function CommunityPage() {
 
             newEvents[eventIndex] = {
                 ...event,
-                rsvps: [...event.rsvps, memberId],
+                rsvps: [...event.rsvps, selectedMemberId],
             };
             
-            const member = members.find(m => m.id === memberId);
+            const member = members.find(m => m.id === selectedMemberId);
             toast({
                 title: 'RSVP Successful!',
                 description: `${member?.name} is now registered for "${event.title}".`,
@@ -161,7 +164,7 @@ export default function CommunityPage() {
         });
     };
     
-    const getMemberName = (memberId: number) => members.find(m => m.id === memberId)?.name || 'Unknown Member';
+    const getMemberName = (memberId: string) => members.find(m => m.id === memberId)?.name || 'Unknown Member';
     const getMemberInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
 
     return (

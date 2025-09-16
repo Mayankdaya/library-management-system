@@ -48,10 +48,10 @@ interface BookTableProps {
   members: Member[];
   onSearch: (term: string) => void;
   onFilter: (status: string) => void;
-  onAddBook: (book: Omit<Book, 'id' | 'status' | 'reservations'>) => void;
-  onCheckOut: (bookIds: number[], memberId: number, dueDate: string) => void;
-  onReturnBook: (bookId: number) => void;
-  onReserveBook: (bookId: number, memberId: number) => void;
+  onAddBook: (book: Omit<Book, 'id' | 'status' | 'reservations' | 'reviews'>) => void;
+  onCheckOut: (bookIds: string[], memberId: string, dueDate: Date) => void;
+  onReturnBook: (bookId: string) => void;
+  onReserveBook: (bookId: string, memberId: string) => void;
 }
 
 export default function BookTable({ books, members, onSearch, onFilter, onAddBook, onCheckOut, onReturnBook, onReserveBook }: BookTableProps) {
@@ -76,7 +76,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
     })
   }
 
-  const handleReserve = (book: Book, memberId: number) => {
+  const handleReserve = (book: Book, memberId: string) => {
     onReserveBook(book.id, memberId);
     const member = members.find(m => m.id === memberId);
     toast({
@@ -93,13 +93,21 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
     });
   };
 
-  const getMemberName = (memberId?: number) => {
+  const getMemberName = (memberId?: string) => {
     if (!memberId) return 'N/A';
     return members.find(m => m.id === memberId)?.name || 'Unknown Member';
   };
 
-  const isOverdue = (dueDate?: string) => {
-    return dueDate && new Date(dueDate) < new Date();
+  const isOverdue = (dueDate?: string | { toDate: () => Date }) => {
+    if (!dueDate) return false;
+    const date = typeof dueDate === 'string' ? new Date(dueDate) : dueDate.toDate();
+    return date < new Date();
+  }
+  
+  const formatDate = (date?: string | { toDate: () => Date }) => {
+    if (!date) return 'N/A';
+    const d = typeof date === 'string' ? new Date(date) : date.toDate();
+    return d.toLocaleDateString();
   }
 
   return (
@@ -162,7 +170,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
           </TableHeader>
           <TableBody>
             {books.length > 0 ? books.map((book) => {
-              const cover = book.coverImage ? { src: book.coverImage, width: 400, height: 600, hint: 'ai generated' } : bookCovers.bookCovers[(book.id - 1) % bookCovers.bookCovers.length];
+              const cover = book.coverImage ? { src: book.coverImage, width: 400, height: 600, hint: 'ai generated' } : bookCovers.bookCovers[(parseInt(book.id, 16) - 1) % bookCovers.bookCovers.length];
               const isBookInCheckout = checkoutItems.some(item => item.id === book.id);
               return (
               <TableRow key={book.id} className={cn('border-white/10', isOverdue(book.dueDate) && 'bg-destructive/20 hover:bg-destructive/30')}>
@@ -203,7 +211,7 @@ export default function BookTable({ books, members, onSearch, onFilter, onAddBoo
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">{book.status === 'Checked Out' ? getMemberName(book.memberId) : 'N/A'}</TableCell>
                 <TableCell className={cn("hidden lg:table-cell", isOverdue(book.dueDate) && "text-destructive font-semibold")}>
-                  {book.dueDate ? new Date(book.dueDate).toLocaleDateString() : 'N/A'}
+                  {formatDate(book.dueDate)}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

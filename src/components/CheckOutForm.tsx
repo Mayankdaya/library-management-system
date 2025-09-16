@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useForm } from "react-hook-form"
@@ -33,7 +34,7 @@ import { useToast } from "@/hooks/use-toast"
 import type { Member, Book } from "@/types"
 
 const formSchema = z.object({
-  memberId: z.coerce.number({ required_error: "A member must be selected." }),
+  memberId: z.string({ required_error: "A member must be selected." }),
   dueDate: z.date({
     required_error: "A due date is required.",
   }),
@@ -44,7 +45,7 @@ type CheckOutFormValues = z.infer<typeof formSchema>;
 interface CheckOutFormProps {
   books: Book[];
   members: Member[];
-  onFormSubmit: (data: CheckOutFormValues & { bookIds: number[] }) => void;
+  onFormSubmit: (data: { bookIds: string[]; memberId: string; dueDate: Date }) => void;
 }
 
 export default function CheckOutForm({ books, members, onFormSubmit }: CheckOutFormProps) {
@@ -84,7 +85,7 @@ export default function CheckOutForm({ books, members, onFormSubmit }: CheckOutF
                 </FormControl>
                 <SelectContent>
                   {members.map(member => (
-                    <SelectItem key={member.id} value={member.id.toString()}>
+                    <SelectItem key={member.id} value={member.id}>
                       {member.name}
                     </SelectItem>
                   ))}

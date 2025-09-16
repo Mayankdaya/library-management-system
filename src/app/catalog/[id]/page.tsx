@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,7 +18,8 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, collection, getDocs, addDoc, Timestamp } from 'firebase/firestore';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 
 export default function BookDetailPage() {
@@ -40,36 +42,51 @@ export default function BookDetailPage() {
 
   useEffect(() => {
     if (id) {
-      const fetchBook = async () => {
-        const { data, error } = await supabase
-          .from('books')
-          .select('*, reviews(*, members(*))')
-          .eq('id', id)
-          .single();
+      const fetchBookAndMembers = async () => {
+        try {
+          // Fetch members first
+          const membersCollection = collection(db, "members");
+          const membersSnapshot = await getDocs(membersCollection);
+          const membersData = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
+          setMembers(membersData);
+          
+          // Fetch book
+          const bookRef = doc(db, 'books', id as string);
+          const bookSnap = await getDoc(bookRef);
 
-        if (data) {
-          const bookData = data as any; // Cast to any to handle Supabase return type
-          setBook(bookData);
-          const initialReviews = bookData.reviews || [];
-          setReviews(initialReviews);
-          if (initialReviews.length > 0) {
-            const totalRating = initialReviews.reduce((acc, review) => acc + review.rating, 0);
-            setAvgRating(totalRating / initialReviews.length);
+          if (bookSnap.exists()) {
+            const bookData = { id: bookSnap.id, ...bookSnap.data() } as Book;
+            
+            // Fetch reviews for the book
+            const reviewsCol = collection(db, `books/${id}/reviews`);
+            const reviewsSnap = await getDocs(reviewsCol);
+            const reviewsData = reviewsSnap.docs.map(reviewDoc => {
+                const review = { id: reviewDoc.id, ...reviewDoc.data()} as Review;
+                review.member = membersData.find(m => m.id === review.memberId);
+                return review;
+            });
+
+            bookData.reviews = reviewsData;
+            setBook(bookData);
+            setReviews(reviewsData);
+
+            if (reviewsData.length > 0) {
+              const totalRating = reviewsData.reduce((acc, review) => acc + review.rating, 0);
+              setAvgRating(totalRating / reviewsData.length);
+            }
+
+          } else {
+            console.error("No such book!");
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load book details.' });
+            router.push('/catalog');
           }
-        } else {
-          console.error("Error fetching book:", error);
+        } catch (error) {
+          console.error("Error fetching data:", error);
           toast({ variant: 'destructive', title: 'Error', description: 'Could not load book details.' });
-          router.push('/catalog');
         }
       };
       
-      const fetchMembers = async () => {
-        const {data, error} = await supabase.from('members').select('*');
-        if(data) setMembers(data);
-      }
-
-      fetchBook();
-      fetchMembers();
+      fetchBookAndMembers();
     }
   }, [id, router, toast]);
 
@@ -103,35 +120,39 @@ export default function BookDetailPage() {
         return;
     }
     
-    const reviewToInsert = {
-      book_id: book.id,
-      member_id: parseInt(newReview.memberId),
-      rating: newReview.rating,
-      comment: newReview.comment,
-      date: new Date().toISOString(),
-    }
+    try {
+        const reviewToInsert = {
+          bookId: book.id,
+          memberId: newReview.memberId,
+          rating: newReview.rating,
+          comment: newReview.comment,
+          date: new Date().toISOString(),
+        }
+        
+        const reviewCol = collection(db, `books/${book.id}/reviews`);
+        const docRef = await addDoc(reviewCol, reviewToInsert);
 
-    const { data: newReviewData, error } = await supabase.from('reviews').insert(reviewToInsert).select('*, members(*)').single();
+        const member = members.find(m => m.id === newReview.memberId);
+        const newReviewData: Review = { ...reviewToInsert, id: docRef.id, member };
+        
+        const updatedReviews = [...reviews, newReviewData];
+        setReviews(updatedReviews);
 
-    if (newReviewData) {
-      const newReviewWithMember = newReviewData as any;
-      const updatedReviews = [...reviews, newReviewWithMember];
-      setReviews(updatedReviews);
-
-      const totalRating = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
-      setAvgRating(totalRating / updatedReviews.length);
-      
-      setNewReview({ rating: 0, comment: '', memberId: '' });
-      toast({
-          title: 'Review Submitted',
-          description: 'Thank you for your feedback!',
-      });
-    } else {
-      toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not submit review. ' + error?.message,
-      });
+        const totalRating = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+        setAvgRating(totalRating / updatedReviews.length);
+        
+        setNewReview({ rating: 0, comment: '', memberId: '' });
+        toast({
+            title: 'Review Submitted',
+            description: 'Thank you for your feedback!',
+        });
+    } catch (error) {
+        console.error("Error submitting review:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not submit review.',
+        });
     }
   };
 
@@ -153,21 +174,29 @@ export default function BookDetailPage() {
     );
   }
   
-  const getMemberName = (memberId?: number) => {
+  const getMemberName = (memberId?: string) => {
     if (!memberId) return 'N/A';
     return members.find(m => m.id === memberId)?.name || 'Unknown Member';
   };
   
-  const getMemberInitials = (member: Member) => {
+  const getMemberInitials = (member?: Member) => {
       if (!member || !member.name) return 'U';
       const name = member.name;
       if (name === 'N/A' || name === 'Unknown Member') return 'U';
       return name.split(' ').map(n => n[0]).join('');
   }
-
-  const isOverdue = (dueDate?: string) => {
-    return dueDate && new Date(dueDate) < new Date();
-  }
+  
+  const isOverdue = (dueDate?: string | { toDate: () => Date }) => {
+    if (!dueDate) return false;
+    const date = typeof dueDate === 'string' ? new Date(dueDate) : dueDate.toDate();
+    return date < new Date();
+  };
+  
+  const formatDate = (date?: string | { toDate: () => Date }) => {
+    if (!date) return 'N/A';
+    const d = typeof date === 'string' ? new Date(date) : date.toDate();
+    return d.toLocaleDateString();
+  };
 
   const cover = book.coverImage 
     ? { src: book.coverImage, width: 800, height: 1200, hint: 'ai generated' } 
@@ -226,9 +255,9 @@ export default function BookDetailPage() {
                   <div>
                     <h4 className="font-semibold mb-2">Borrower Details</h4>
                     <p className="text-muted-foreground">Checked out by: {getMemberName(book.memberId)}</p>
-                    <p className="text-muted-foreground">Checkout Date: {book.checkoutDate ? new Date(book.checkoutDate).toLocaleDateString() : 'N/A'}</p>
+                    <p className="text-muted-foreground">Checkout Date: {formatDate(book.checkoutDate)}</p>
                     <p className={cn("text-muted-foreground", isOverdue(book.dueDate) && "text-destructive font-semibold")}>
-                        Due Date: {book.dueDate ? new Date(book.dueDate).toLocaleDateString() : 'N/A'}
+                        Due Date: {formatDate(book.dueDate)}
                     </p>
                   </div>
                 )}
@@ -289,11 +318,11 @@ export default function BookDetailPage() {
                             {reviews.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((review) => (
                                 <div key={review.id} className="flex items-start gap-4 border-b border-border pb-4 last:border-b-0">
                                     <Avatar>
-                                        <AvatarFallback>{getMemberInitials(review.members)}</AvatarFallback>
+                                        <AvatarFallback>{getMemberInitials(review.member)}</AvatarFallback>
                                     </Avatar>
                                     <div className='flex-1'>
                                         <div className="flex items-center justify-between">
-                                            <p className='font-semibold'>{review.members?.name || 'Anonymous'}</p>
+                                            <p className='font-semibold'>{review.member?.name || 'Anonymous'}</p>
                                             <div className="flex items-center gap-1">
                                                 {[...Array(5)].map((_, i) => (
                                                     <Star key={i} className={cn("h-4 w-4", i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
@@ -326,7 +355,7 @@ export default function BookDetailPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {members.map(member => (
-                                        <SelectItem key={member.id} value={member.id.toString()}>{member.name}</SelectItem>
+                                        <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>

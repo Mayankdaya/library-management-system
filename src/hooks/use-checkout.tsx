@@ -7,7 +7,7 @@ import type { Book } from '@/types';
 interface CheckoutContextType {
   checkoutItems: Book[];
   addToCheckout: (book: Book) => void;
-  removeFromCheckout: (bookId: number) => void;
+  removeFromCheckout: (bookId: string) => void;
   clearCheckout: () => void;
 }
 
@@ -26,7 +26,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromCheckout = (bookId: number) => {
+  const removeFromCheckout = (bookId: string) => {
     setCheckoutItems((prevItems) => prevItems.filter(item => item.id !== bookId));
   };
 

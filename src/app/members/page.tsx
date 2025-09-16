@@ -1,8 +1,10 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import type { Member } from '@/types';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import Header from '@/components/Header';
 import {
   Table,
@@ -39,32 +41,38 @@ export default function MembersPage() {
 
   useEffect(() => {
     const fetchMembers = async () => {
-      const { data, error } = await supabase.from('members').select('*');
-      if (data) setMembers(data);
+      const membersCollection = collection(db, 'members');
+      const membersSnapshot = await getDocs(membersCollection);
+      if (!membersSnapshot.empty) {
+        const membersList = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
+        setMembers(membersList);
+      }
     };
     fetchMembers();
   }, []);
 
   const handleFormSubmit = async (memberData: Omit<Member, 'id' | 'joinDate'>) => {
-    if (selectedMember) {
-      // Edit existing member
-      const { data, error } = await supabase.from('members').update(memberData).eq('id', selectedMember.id).select();
-      if (data) {
-        setMembers(members.map(m => m.id === selectedMember.id ? data[0] : m));
+    try {
+      if (selectedMember) {
+        // Edit existing member
+        const memberRef = doc(db, 'members', selectedMember.id);
+        await updateDoc(memberRef, memberData);
+        setMembers(members.map(m => m.id === selectedMember.id ? { ...m, ...memberData } : m));
         toast({ title: 'Member Updated', description: `${memberData.name}'s details have been updated.` });
+      } else {
+        // Add new member
+        const newMemberData = {
+          ...memberData,
+          joinDate: new Date().toISOString(),
+        };
+        const docRef = await addDoc(collection(db, 'members'), newMemberData);
+        setMembers([...members, { id: docRef.id, ...newMemberData }]);
+        toast({ title: 'Member Added', description: `${memberData.name} has been added to the library.` });
       }
-    } else {
-      // Add new member
-      const newMemberData = {
-        ...memberData,
-        joinDate: new Date().toISOString().split('T')[0],
-      };
-      const { data, error } = await supabase.from('members').insert([newMemberData]).select();
-      if (data) {
-        setMembers([...members, data[0]]);
-        toast({ title: 'Member Added', description: `${data[0].name} has been added to the library.` });
-      }
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not save member details.' });
     }
+    
     setSelectedMember(null);
     setDialogOpen(false);
   };
@@ -79,12 +87,14 @@ export default function MembersPage() {
     setDialogOpen(true);
   }
 
-  const handleDelete = async (memberId: number) => {
+  const handleDelete = async (memberId: string) => {
     const memberName = members.find(m => m.id === memberId)?.name;
-    const { error } = await supabase.from('members').delete().eq('id', memberId);
-    if (!error) {
+    try {
+      await deleteDoc(doc(db, 'members', memberId));
       setMembers(members.filter(m => m.id !== memberId));
       toast({ variant: 'destructive', title: 'Member Deleted', description: `${memberName} has been removed from the system.` });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not delete member.' });
     }
   };
 

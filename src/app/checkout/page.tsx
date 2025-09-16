@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -9,7 +10,8 @@ import { ArrowLeft, Book as BookIcon, ShoppingCart, Trash2 } from 'lucide-react'
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, writeBatch, doc, Timestamp } from 'firebase/firestore';
 import type { Member } from '@/types';
 import CheckOutForm from '@/components/CheckOutForm';
 import { useToast } from '@/hooks/use-toast';
@@ -24,33 +26,35 @@ export default function CheckoutPage() {
 
     useEffect(() => {
         const fetchMembers = async () => {
-            const { data, error } = await supabase.from('members').select('*');
-            if (data) setMembers(data);
+            const membersCollection = collection(db, 'members');
+            const membersSnapshot = await getDocs(membersCollection);
+            const membersData = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
+            setMembers(membersData);
         }
         fetchMembers();
     }, []);
 
-    const handleCheckOut = async (bookIds: number[], memberId: number, dueDate: string) => {
-        const updates = bookIds.map(id => 
-            supabase.from('books').update({
+    const handleCheckOut = async (bookIds: string[], memberId: string, dueDate: Date) => {
+        const batch = writeBatch(db);
+        bookIds.forEach(id => {
+            const bookRef = doc(db, 'books', id);
+            batch.update(bookRef, {
                 status: 'Checked Out',
                 memberId: memberId,
-                checkoutDate: new Date().toISOString().split('T')[0],
-                dueDate,
-            }).eq('id', id)
-        );
-        const results = await Promise.all(updates);
+                checkoutDate: Timestamp.now(),
+                dueDate: Timestamp.fromDate(dueDate)
+            });
+        });
 
-        const hasError = results.some(res => res.error);
-
-        if (!hasError) {
+        try {
+            await batch.commit();
             clearCheckout();
             toast({
                 title: "Checkout Successful!",
                 description: "The books have been checked out."
             });
             router.push('/catalog');
-        } else {
+        } catch (error) {
              toast({
                 variant: 'destructive',
                 title: "Checkout Failed",
@@ -98,7 +102,7 @@ export default function CheckoutPage() {
                                 <CardContent>
                                     <div className="space-y-4">
                                         {checkoutItems.map((book, index) => {
-                                            const cover = book.coverImage ? { src: book.coverImage, width: 400, height: 600, hint: 'ai generated' } : bookCovers.bookCovers[(book.id - 1) % bookCovers.bookCovers.length];
+                                            const cover = book.coverImage ? { src: book.coverImage, width: 400, height: 600, hint: 'ai generated' } : bookCovers.bookCovers[(parseInt(book.id, 16) - 1) % bookCovers.bookCovers.length];
                                             return(
                                             <React.Fragment key={book.id}>
                                                 <div className="flex items-center gap-4">
@@ -140,7 +144,7 @@ export default function CheckoutPage() {
                                     <CheckOutForm 
                                         books={checkoutItems}
                                         members={members}
-                                        onFormSubmit={({ bookIds, memberId, dueDate }) => handleCheckOut(bookIds, memberId, dueDate.toISOString().split('T')[0])}
+                                        onFormSubmit={({ bookIds, memberId, dueDate }) => handleCheckOut(bookIds, memberId, dueDate)}
                                     />
                                 </CardContent>
                             </Card>

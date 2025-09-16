@@ -1,31 +1,33 @@
 export interface Review {
-  id: number;
-  book_id: number;
-  member_id: number;
+  id: string; // Firestore document ID
+  bookId: string;
+  memberId: string;
   rating: number; // 1 to 5
   comment: string;
-  date: string;
-  members: Member; // Joined data
+  date: string; // ISO string
+  member?: Member; // Populated after fetching
 }
 
 export interface Book {
-  id: number;
+  id: string; // Firestore document ID
   title: string;
   author: string;
   isbn: string;
   genre: string;
   status: 'Available' | 'Checked Out';
-  memberId?: number;
+  memberId?: string;
   checkoutDate?: string;
   dueDate?: string;
-  reservations?: number[]; // memberIds
+  reservations?: string[]; // array of memberIds
   reviews?: Review[];
-  coverImage?: string; // Data URI for the cover image
+  coverImage?: string;
+  // Firestore specific, not always present on the client
+  borrower?: Member;
 }
 
 export interface Member {
-  id: number;
+  id: string; // Firestore document ID
   name: string;
   email: string;
-  joinDate: string;
+  joinDate: string; // ISO string
 }

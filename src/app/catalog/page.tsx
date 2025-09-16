@@ -9,7 +9,8 @@ import BookTable from '@/components/BookTable';
 import SuggestedReads from '@/components/SuggestedReads';
 import Dashboard from '@/components/Dashboard';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc, doc, updateDoc, writeBatch, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -21,102 +22,135 @@ export default function CatalogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const { clearCheckout } = useCheckout();
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
   }, [user, loading, router]);
+  
+  const fetchAllData = async () => {
+      if (!user) return;
+      setDataLoading(true);
+      try {
+        const booksCollection = collection(db, "books");
+        const membersCollection = collection(db, "members");
+
+        const [booksSnapshot, membersSnapshot] = await Promise.all([
+          getDocs(booksCollection),
+          getDocs(membersCollection),
+        ]);
+        
+        const membersData = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
+        setMembers(membersData);
+
+        const booksData = await Promise.all(booksSnapshot.docs.map(async (bookDoc) => {
+          const bookData = { id: bookDoc.id, ...bookDoc.data() } as Book;
+          if (bookData.memberId) {
+            const borrower = membersData.find(m => m.id === bookData.memberId);
+            bookData.borrower = borrower;
+          }
+          
+          // Fetch reviews for each book
+          const reviewsCol = collection(db, `books/${bookDoc.id}/reviews`);
+          const reviewsSnap = await getDocs(reviewsCol);
+          bookData.reviews = reviewsSnap.docs.map(reviewDoc => {
+             const reviewData = { id: reviewDoc.id, ...reviewDoc.data() } as Review;
+             reviewData.member = membersData.find(m => m.id === reviewData.memberId);
+             return reviewData;
+          });
+
+          return bookData;
+        }));
+        
+        setBooks(booksData);
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setDataLoading(false);
+      }
+    };
 
   useEffect(() => {
     if (user) {
-      const fetchBooks = async () => {
-        const { data, error } = await supabase.from('books').select('*, reviews(*)');
-        if (data) setBooks(data);
-      };
-      const fetchMembers = async () => {
-        const { data, error } = await supabase.from('members').select('*');
-        if (data) setMembers(data);
-      };
-      fetchBooks();
-      fetchMembers();
+      fetchAllData();
     }
   }, [user]);
 
-  const handleAddBook = async (newBook: Omit<Book, 'id' | 'status' | 'reservations'>) => {
-    const { data, error } = await supabase
-        .from('books')
-        .insert([{ ...newBook, status: 'Available', reservations: [] }])
-        .select('*, reviews(*)')
-        .single();
-    
-    if (data) {
-        setBooks(prevBooks => [...prevBooks, data]);
-    } else {
+  const handleAddBook = async (newBook: Omit<Book, 'id' | 'status' | 'reservations' | 'reviews'>) => {
+    if (!user) return;
+    try {
+      const docRef = await addDoc(collection(db, "books"), {
+        ...newBook,
+        status: 'Available',
+        reservations: [],
+      });
+      const newBookData = { ...newBook, id: docRef.id, status: 'Available', reservations: [], reviews: [] } as Book;
+      setBooks(prevBooks => [...prevBooks, newBookData]);
+    } catch (error) {
         console.error("Error adding book:", error);
     }
   };
 
-  const handleCheckOut = async (bookIds: number[], memberId: number, dueDate: string) => {
-    const updates = bookIds.map(id => 
-      supabase.from('books').update({
+  const handleCheckOut = async (bookIds: string[], memberId: string, dueDate: Date) => {
+    if (!user) return;
+    const batch = writeBatch(db);
+    bookIds.forEach(id => {
+      const bookRef = doc(db, 'books', id);
+      batch.update(bookRef, {
         status: 'Checked Out',
         memberId: memberId,
-        checkoutDate: new Date().toISOString().split('T')[0],
-        dueDate,
-      }).eq('id', id)
-    );
-    await Promise.all(updates);
-
-    const { data: updatedBooks } = await supabase.from('books').select('*, reviews(*)');
-    if (updatedBooks) setBooks(updatedBooks);
-    
+        checkoutDate: Timestamp.now(),
+        dueDate: Timestamp.fromDate(dueDate),
+      });
+    });
+    await batch.commit();
     clearCheckout();
-    router.push('/catalog');
+    await fetchAllData(); // Re-fetch all data to get updated state
   };
-
-  const handleReturnBook = async (bookId: number) => {
+  
+  const handleReturnBook = async (bookId: string) => {
+    if (!user) return;
     const book = books.find(b => b.id === bookId);
     if (!book) return;
 
-    let updateData: Partial<Book> = {
+    let updateData: any = {
       status: 'Available',
-      memberId: undefined,
-      checkoutDate: undefined,
-      dueDate: undefined,
+      memberId: null,
+      checkoutDate: null,
+      dueDate: null,
     };
 
     if (book.reservations && book.reservations.length > 0) {
       const nextMemberId = book.reservations[0];
       const remainingReservations = book.reservations.slice(1);
+      const newDueDate = new Date();
+      newDueDate.setDate(newDueDate.getDate() + 14);
       updateData = {
         status: 'Checked Out',
         memberId: nextMemberId,
-        checkoutDate: new Date().toISOString().split('T')[0],
-        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        checkoutDate: Timestamp.now(),
+        dueDate: Timestamp.fromDate(newDueDate),
         reservations: remainingReservations,
       };
     }
     
-    const { data, error } = await supabase.from('books').update(updateData).eq('id', bookId).select();
-    
-    if (data) {
-       const { data: updatedBooks } = await supabase.from('books').select('*, reviews(*)');
-       if (updatedBooks) setBooks(updatedBooks);
-    }
+    const bookRef = doc(db, 'books', bookId);
+    await updateDoc(bookRef, updateData);
+    await fetchAllData();
   };
   
-  const handleReserveBook = async (bookId: number, memberId: number) => {
+  const handleReserveBook = async (bookId: string, memberId: string) => {
+    if(!user) return;
     const book = books.find(b => b.id === bookId);
     if (!book) return;
 
     const newReservations = [...(book.reservations || []), memberId];
-    const { data, error } = await supabase.from('books').update({ reservations: newReservations }).eq('id', bookId).select();
-    
-    if (data) {
-       const { data: updatedBooks } = await supabase.from('books').select('*, reviews(*)');
-       if (updatedBooks) setBooks(updatedBooks);
-    }
+    const bookRef = doc(db, 'books', bookId);
+    await updateDoc(bookRef, { reservations: newReservations });
+    await fetchAllData();
   }
 
   const filteredBooks = useMemo(() => {
@@ -125,19 +159,21 @@ export default function CatalogPage() {
         if (filterStatus === 'All') return true;
         if (filterStatus === 'Overdue') {
           if (book.status !== 'Checked Out' || !book.dueDate) return false;
-          return new Date(book.dueDate) < new Date();
+          const dueDate = (book.dueDate as any)?.toDate ? (book.dueDate as any).toDate() : new Date(book.dueDate);
+          return dueDate < new Date();
         }
         return book.status === filterStatus;
       })
       .filter(book => {
         const term = searchTerm.toLowerCase();
-        const member = book.memberId ? members.find(m => m.id === book.memberId) : null;
+        const memberName = book.borrower?.name?.toLowerCase() || '';
+
         return (
           book.title.toLowerCase().includes(term) ||
           book.author.toLowerCase().includes(term) ||
           book.isbn.toLowerCase().includes(term) ||
           book.genre.toLowerCase().includes(term) ||
-          (member && member.name.toLowerCase().includes(term))
+          (memberName && memberName.includes(term))
         );
       });
   }, [books, members, searchTerm, filterStatus]);
@@ -146,7 +182,7 @@ export default function CatalogPage() {
     return books.filter(book => book.status === 'Checked Out').map(({ title, author, genre }) => ({ title, author, genre }));
   }, [books]);
   
-  if (loading || !user) {
+  if (loading || dataLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-transparent">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
