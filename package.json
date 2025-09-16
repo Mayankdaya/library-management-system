@@ -13,6 +13,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@genkit-ai/firebase": "^1.0.0",
+    "@genkit-ai/googleai": "^1.0.0",
     "@hookform/resolvers": "^4.1.3",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -41,8 +43,9 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
-    "firebase": "^10.12.4",
+    "firebase": "^12.2.1",
     "framer-motion": "^11.5.7",
+    "genkit": "^1.0.0",
     "lucide-react": "^0.475.0",
     "next": "15.3.3",
     "next-themes": "^0.3.0",
@@ -65,3 +68,4 @@
     "typescript": "^5"
   }
 }
+
