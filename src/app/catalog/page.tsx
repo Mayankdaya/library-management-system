@@ -11,11 +11,11 @@ import Dashboard from '@/components/Dashboard';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
 import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function CatalogPage() {
   const router = useRouter();
-  const { isSignedIn, isLoaded } = useUser();
+  const { user, loading } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,13 +23,13 @@ export default function CatalogPage() {
   const { clearCheckout } = useCheckout();
 
   useEffect(() => {
-    if (isLoaded && !isSignedIn) {
+    if (!loading && !user) {
       router.push('/sign-in');
     }
-  }, [isSignedIn, isLoaded, router]);
+  }, [user, loading, router]);
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (user) {
       const fetchBooks = async () => {
         const { data, error } = await supabase.from('books').select('*');
         if (data) setBooks(data);
@@ -41,7 +41,7 @@ export default function CatalogPage() {
       fetchBooks();
       fetchMembers();
     }
-  }, [isSignedIn]);
+  }, [user]);
 
   const handleAddBook = async (newBook: Omit<Book, 'id' | 'status'>) => {
     const { data, error } = await supabase.from('books').insert([{ ...newBook, status: 'Available', reservations: [] }]).select();
@@ -139,14 +139,13 @@ export default function CatalogPage() {
     return books.filter(book => book.status === 'Checked Out').map(({ title, author, genre }) => ({ title, author, genre }));
   }, [books]);
   
-  if (!isLoaded || !isSignedIn) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-transparent">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-transparent text-foreground font-body">

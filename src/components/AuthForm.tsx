@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { auth } from "@/lib/firebase";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useState } from 'react';
@@ -47,38 +48,31 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
   const onSubmit = async (data: AuthFormValues) => {
     setIsLoading(true);
-    if (mode === "signup") {
-      const { error } = await supabase.auth.signUp(data);
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Sign-up failed",
-          description: error.message,
-        });
-      } else {
+    try {
+      if (mode === "signup") {
+        await createUserWithEmailAndPassword(auth, data.email, data.password);
         toast({
           title: "Sign-up successful!",
-          description: "Please check your email to confirm your account.",
+          description: "Welcome to Verdant Library.",
         });
         router.push('/catalog');
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword(data);
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Login failed",
-          description: error.message,
-        });
       } else {
-         toast({
+        await signInWithEmailAndPassword(auth, data.email, data.password);
+        toast({
           title: "Login successful!",
           description: "Welcome back.",
         });
         router.push("/catalog");
       }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: `${mode === 'login' ? 'Login' : 'Sign-up'} failed`,
+        description: error.message,
+      });
+    } finally {
+        setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

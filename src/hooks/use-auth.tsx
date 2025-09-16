@@ -2,8 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
+import { auth } from '@/lib/firebase';
+import type { User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import { Loader2 } from 'lucide-react';
 
 interface AuthContextType {
   user: User | null;
@@ -18,28 +20,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       setLoading(false);
-    };
+    });
 
-    getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session: Session | null) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await auth.signOut();
     setUser(null);
   };
 
@@ -48,6 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signOut,
   };
+  
+  if (loading) {
+    return (
+       <div className="min-h-screen flex items-center justify-center bg-transparent">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

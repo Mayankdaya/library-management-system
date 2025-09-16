@@ -7,9 +7,8 @@ import { Button } from './ui/button';
 import { Settings, ShoppingCart, LogIn, UserPlus, LogOut } from 'lucide-react';
 import React from 'react';
 import { useCheckout } from '@/hooks/use-checkout.tsx';
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { UserButton, useUser } from '@clerk/nextjs';
-
 
 export const BookMarkedIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -37,8 +36,13 @@ const MessageSquareQuoteIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function Header() {
   const { checkoutItems } = useCheckout();
-  const { user } = useUser();
+  const { user, signOut } = useAuth();
   const router = useRouter();
+  
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/');
+  }
 
   return (
     <header className={cn("glassmorphic sticky top-0 left-0 right-0 z-30")}>
@@ -81,7 +85,10 @@ export default function Header() {
                       <span className="sr-only">Settings</span>
                   </Link>
                 </Button>
-                <UserButton afterSignOutUrl="/" />
+                <Button onClick={handleLogout} variant="outline" size="sm">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
               </>
             ) : (
               <>

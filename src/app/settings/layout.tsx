@@ -4,14 +4,10 @@
 import {
   SidebarProvider,
   Sidebar,
-  SidebarHeader,
-  SidebarTrigger,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarInset,
   SidebarContent,
-  SidebarFooter
 } from "@/components/ui/sidebar"
 import { Bell, Brush, User, Settings as SettingsIcon } from 'lucide-react'
 import Header from "@/components/Header"
@@ -20,7 +16,7 @@ import Link from "next/link"
 
 const menuItems = [
     { href: "/settings", label: "General", icon: SettingsIcon },
-    { href: "/user-profile", label: "Profile", icon: User },
+    { href: "/settings/profile", label: "Profile", icon: User },
     { href: "/settings/appearance", label: "Appearance", icon: Brush },
     { href: "/settings/notifications", label: "Notifications", icon: Bell },
 ]
@@ -47,7 +43,7 @@ export default function SettingsLayout({
                     <SidebarMenu>
                         {menuItems.map((item) => (
                         <SidebarMenuItem key={item.label}>
-                            <SidebarMenuButton asChild isActive={pathname.startsWith(item.href)}>
+                            <SidebarMenuButton asChild isActive={pathname === item.href || (item.href !== "/settings" && pathname.startsWith(item.href))}>
                                 <Link href={item.href}>
                                 <item.icon />
                                 <span>{item.label}</span>
